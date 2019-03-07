@@ -3,10 +3,17 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
   mode: 'development',
-  entry: './src/index.js',
+  entry: {
+    main: path.resolve(__dirname,'src/main.js'),
+    //vues:['vue','vuex','vue-router','vee-validate'],
+    //iview:['iview'],
+    //axios:['axios']
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'main.js'
+    //publicPath:"/url", // 处理正确的静态分发资源包地址
+    filename: 'res/js/[name].bundle.js',
+    chunkFilename: "res/js/[name].chunk.js"
   },
   // 解决编译环境 : webpack You are using the runtime-only build of Vue where the template compiler is not available
   resolve: {
@@ -34,6 +41,16 @@ module.exports = {
             'vue-style-loader',
             'css-loader'
           ]
+        },
+        // 字体资源文件
+        {
+          test: /\.(svg|ttf|eot|woff)\??.*$/,
+          loader: "url-loader?limit=10000&name=res/font/[hash].[ext]"
+        },
+        // 图片资源文件
+        {
+          test: /\.(png|jpg|gif)$/,
+          loader: 'url-loader?limit=8192&name=res/img/[hash].[ext]'
         }
       ]
   },
