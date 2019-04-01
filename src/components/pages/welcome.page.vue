@@ -12,7 +12,7 @@
 			}
 		},
 		beforeRouteEnter (to, from, next) {
-			next("/login");
+			next("/login"); // 直接跳转到登录页， 不在此处停留
 		}
 	}
 </script>

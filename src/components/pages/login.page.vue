@@ -36,7 +36,7 @@
 
 				验证码：<img :src="catchaURL+'?rs='+catchaSeed" @click="refreshCatcha($event)"/><br/><br/>
 
-				<Checkbox  v-model="keepLoginState"><Icon type="md-lock"></Icon><font color="#808695">记住我的登录状态</font></Checkbox >
+				<!--<Checkbox  v-model="keepLoginState"><Icon type="md-lock"></Icon><font color="#808695">记住我的登录状态</font></Checkbox >-->
 
 				<Divider/>
 				<Button size="large" long icon="md-log-in" type="primary" @click="submit">提交</Button>
@@ -49,10 +49,11 @@
 	import {Store} from '../../store.js';
 	import axios from 'axios';
 	import md5 from 'js-md5';
+	import jwt from 'jsonwebtoken';
 
 	import LoginBG from '../../pics/login_bg.jpg';
 
-	//import qs from 'qs'; // 处理asiox post传参的坑
+	import qs from 'qs'; // 处理asiox post传参的坑
   	export default{
 		name:"LoginPage",
 		data:function(){
@@ -61,8 +62,8 @@
 				LoginBGURL:LoginBG,
 				id:'',
 				pw:'',
-				vc:'', // 验证码
-				keepLoginState:false // 保持登录状态
+				vc:'' // 验证码
+				//keepLoginState:false // 保持登录状态
 			}
 		},
 		computed:{
@@ -77,37 +78,42 @@
 			submit:function(){
 				this.$Loading.start(); // 进度条开始载入
 				var jsonMsg = {
-					"ID":this.id,
-					"PW":md5(this.pw + Store.state.salt), // md5加密
-					"VC":this.vc,
-					"KLS":this.keepLoginState // 登录Cookie
+					"WorkId":this.id,
+					"Pwd":md5(this.pw + Store.state.salt) // md5加密
 				};
 				//console.log(JSON.stringify(jsonMsg));
 				var mvue = this;// 向内传vue实体
 				// 采用字符串方式发送
-				axios.post(Store.state.server+"/LoginServlet","jsondata="+JSON.stringify(jsonMsg))
+				axios.post(Store.state.server+"/LoginServlet", qs.stringify(jsonMsg),
+					{
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded'
+						}
+					})
 					.then(function (response) {
 						let res = response.data;
-						let isSuccess = res.FLAG;
+						let isSuccess = res.code==="100";
 						//console.log(res.MSG,isSuccess);
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '登录成功',
-								desc: res.MSG //'欢迎回来！会员:'+mvue.id+'，即将为您进行跳转!'
+								desc: '欢迎回来！员工工号:'+mvue.id+'，即将为您进行跳转!'
 							});
+							let token = res.data[0].Token; // 得到Tokan
+							var decoded = jwt.decode(token, {complete: true});
 							mvue.$Loading.finish(); // 进度条载入完毕
-							Store.commit('online',res.UID); // 设置登录状态
-							mvue.$router.push("/shop"); // 跳转到商店页面
+							Store.commit('online', token, decoded.payload.Power); // 设置登录状态
+							mvue.$router.push("/main"); // 跳转到主页面
 						} else {
+							Store.commit('offline'); // 设置登录状态
 							mvue.$Notice.error({
 								title: '登录失败',
-								desc: res.MSG
+								desc: res.msg
 							});
 							mvue.$Loading.error(); // 进度条载入失败
 						}
 					})
 					.catch(function (error) {
-						//console.log(error);
 						mvue.$Loading.error(); // 进度条载入失败
 					});
 			}

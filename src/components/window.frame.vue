@@ -14,7 +14,7 @@
     margin-left: 10px;
 }
 .layout-nav{
-    width: 110px;
+    width: 220px;
     margin: 0 auto;
     margin-right: 10px;
     float:right;
@@ -30,10 +30,16 @@
             <Header>
                 <Menu mode="horizontal" theme="dark" active-name="1" @on-select="handleMenuItemSelect">
                     <div class="layout-logo">
-                        <Avatar :src="logoUrl" @click.native="goToShopPage"></Avatar>
-                        <font face="微软雅黑" size="5" color="#ffffff" style="font-weight:bold">&nbsp; 车辆信息管理系统</font>
+                        <Avatar :src="logoUrl" ></Avatar>
+                        <font face="微软雅黑" size="5" color="#ffffff" style="font-weight:bold">&nbsp; 特情车辆智能处理系统</font>
                     </div>
-                    <div class="layout-nav" v-if="isLoginIn">
+                    <div class="layout-nav" v-if="!isLoginIn">
+                        <MenuItem name="1" to="/login">
+                            <Icon type="md-log-in" />
+                            登录
+                        </MenuItem>
+                    </div>
+                    <div class="layout-nav" v-else>
                         <MenuItem name="MINE_WIDGE">
                             <Icon type="md-person" />
                             我的..
@@ -41,12 +47,6 @@
                         <MenuItem name="LOGOUT">
                             <Icon type="md-log-out" />
                             退出登录
-                        </MenuItem>
-                    </div>
-                    <div class="layout-nav" v-else>
-                        <MenuItem name="1" to="/login">
-                            <Icon type="md-log-in" />
-                            登录
                         </MenuItem>
                     </div>
                 </Menu>
@@ -57,7 +57,7 @@
             </Content>
             <Footer class="layout-footer-center">
                 <Divider />
-                <font color="#808695">2018-2019 &copy; 车辆信息管理系统</font>
+                <font color="#808695">2018-2019 &copy; 陕西高速 特情车辆智能处理系统</font>
             </Footer>
         </Layout>
         <!--抽屉效果-->
@@ -97,27 +97,27 @@
             },
             logout : function(){ // 退出登录
                 var mvue = this;
-                axios.get(Store.state.server+"/CheckLoginStatusServlet",
-                    {
-                        params: { // get 模式手动赋值
-							"jsondata": {"UID":this.getUID}
+                axios.get(Store.state.server+"/LogoutServlet",
+                    {   
+                        headers: {
+							'Content-Type': 'application/x-www-form-urlencoded'
 						}
                     })
                     .then(function (response) {
                         let res = response.data;
-                        let isSuccess = res.FLAG;
+                        let isSuccess = res.code=="100";
                         //console.log(res.MSG,isSuccess);
                         if(isSuccess){
                             mvue.$Notice.success({
                                 title: '退出成功',
-                                desc: '您已安全退出，记得常回来看看!'
+                                desc: '您已安全退出!'
                             });
                             Store.commit('offline'); // 设置登录状态:退出
-                            mvue.$router.push("/"); // 跳转到首页
+                            mvue.$router.push("/login"); // 跳转到登陆页
                         } else {
                             mvue.$Notice.error({
                                 title: '退出失败',
-                                desc: res.MSG
+                                desc: res.msg
                             });
                         }
                     })
