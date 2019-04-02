@@ -3,7 +3,7 @@
 	text-align: center; /*让div内部文字居中*/
 	background-color: #fff;
 	border-radius: 10px;
-	height:324px;
+	height:264px;
 	width:512px;
 	margin: auto;
 	position: relative;
@@ -25,18 +25,22 @@
 		<div class="loginFrom">
 			<Card :bordered="false" dis-hover>
 				<p slot="title">欢迎回来 ^_^</p>
-				<Input prefix="md-contact" name="idinput" type="text" placeholder="请输入您的账号" 
-					style="width: auto" v-model="id" @keydown.enter.native="submit"></Input><br/><br/>
+				<Form ref="loginform" :model="formData" :rules="formValidate">
+					<FormItem prop="id">
+						<Input prefix="md-contact"  type="text" placeholder="请输入您的账号/工号" v-model="formData.id"
+							style="width: auto" @keydown.enter.native="submit"></Input>
+					</FormItem>
+					<FormItem prop="pw">
+						<Input prefix="md-key"  type="password" placeholder="请输入您的登陆密码" v-model="formData.pw"
+							style="width: auto" @keydown.enter.native="submit"></Input>
+					</FormItem>
+					<FormItem prop="vc">
+						<Input prefix="md-barcode"  type="text" placeholder="请输入下方的验证码" v-model="formData.vc"
+							style="width: auto" @keydown.enter.native="submit"></Input>
+					</FormItem>
+				</Form>
 
-				<Input prefix="md-key" name="pwinput" type="password" placeholder="请输入您的密码" 
-					style="width: auto" v-model="pw" @keydown.enter.native="submit"></Input><br/><br/>
-
-				<Input prefix="md-barcode" name="valicodeinput" type="text" placeholder="请输入验证码" 
-					style="width: auto" v-model="vc" @keydown.enter.native="submit"></Input><br/><br/>
-
-				验证码：<img :src="catchaURL+'?rs='+catchaSeed" @click="refreshCatcha($event)"/><br/><br/>
-
-				<!--<Checkbox  v-model="keepLoginState"><Icon type="md-lock"></Icon><font color="#808695">记住我的登录状态</font></Checkbox >-->
+				验证码：<img :src="catchaURL+'?rs='+catchaSeed" @click="refreshCatcha($event)"/><br/>
 
 				<Divider/>
 				<Button size="large" long icon="md-log-in" type="primary" @click="submit">提交</Button>
@@ -57,13 +61,54 @@
   	export default{
 		name:"LoginPage",
 		data:function(){
-			return{
+			const asyncValiCode = (rule, value, callback) => {
+				// 异步验证验证码
+				axios.post(Store.state.server+"/CheckValiCode", qs.stringify({"Vali":value}),
+				{
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					}
+				})
+				.then(function (response) {
+					let res = response.data;
+					let isSuccess = res.code==="100";
+					// console.log(res,isSuccess);
+					if(isSuccess){
+						res.data[0].Result==="true"?callback():callback(new Error("验证码错误"));
+					} else {
+						console.log("异步验证验证码失败:", res.msg);
+						callback(new Error("异步验证验证码失败"));
+					}
+				})
+				.catch(function (error) {
+					// console.log(error);
+					callback(new Error("网络连接不稳定，无法获取验证码"));
+				});
+			};
+			return {
 				catchaSeed:Math.random(),
 				LoginBGURL:LoginBG,
-				id:'',
-				pw:'',
-				vc:'' // 验证码
-				//keepLoginState:false // 保持登录状态
+				formData:{
+					id:'',
+					pw:'',
+					vc:'' // 验证码
+				},
+				formValidate:{
+					id: [
+                        { required: true, message: '请输入账号/工号', trigger: 'blur' },
+						{ pattern: /^\d{9,9}$|^[a-zA-Z]{4,9}$/, message: '工号长度应为9位', trigger: 'blur' } // 九位工号或纯英文特殊账号
+                    ],
+					pw: [
+                        { required: true, message: '请输入密码', trigger: 'blur' },
+						{ type: 'string', min: 6, message: '密码长度为6-16位', trigger: 'blur' },
+						{ type: 'string', max: 16, message: '密码长度为6-16位', trigger: 'blur' }
+                    ],
+					vc: [
+                        { required: true, message: '请输入4位验证码', trigger: 'blur' },
+						{ type: 'string', len: 4, message: '验证码长度为4位', trigger: 'blur' },
+						{ validator: asyncValiCode ,trigger: 'blur' }
+                    ]
+				}
 			}
 		},
 		computed:{
@@ -76,10 +121,22 @@
 				this.catchaSeed = Math.random();
 			},
 			submit:function(){
+				var valipass = true;
+				this.$refs['loginform'].validate((valid) => {
+                    if (!valid) {
+						this.$Notice.error({
+								title: '表单填写有误',
+								desc: '请检查您的输入!'
+							});
+                        valipass = false;
+                    } 
+                })
+				if(!valipass) return;
+
 				this.$Loading.start(); // 进度条开始载入
 				var jsonMsg = {
-					"WorkId":this.id,
-					"Pwd":md5(this.pw + Store.state.salt) // md5加密
+					"WorkId":this.formData.id,
+					"Pwd":md5(this.formData.pw + Store.state.salt) // md5加密
 				};
 				//console.log(JSON.stringify(jsonMsg));
 				var mvue = this;// 向内传vue实体
@@ -97,10 +154,10 @@
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '登录成功',
-								desc: '欢迎回来！员工工号:'+mvue.id+'，即将为您进行跳转!'
+								desc: '欢迎回来！员工:'+mvue.formData.id+'，即将为您进行跳转!'
 							});
 							let token = res.data[0].Token; // 得到Tokan
-							var decoded = jwt.decode(token, {complete: true});
+							var decoded = jwt.decode(token, {complete: true}); // 解析Token
 							mvue.$Loading.finish(); // 进度条载入完毕
 							Store.commit('online', token, decoded.payload.Power); // 设置登录状态
 							mvue.$router.push("/main"); // 跳转到主页面
@@ -118,5 +175,5 @@
 					});
 			}
 		}
-  }
+    }
 </script>
