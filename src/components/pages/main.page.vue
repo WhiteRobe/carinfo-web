@@ -68,7 +68,7 @@
 					</Col>
 					<Col span="3">&nbsp;<!--留白--></Col>
 					<Col span="6">
-						<!--其它按钮-->
+						<Button type="warning" size="large" long icon="md-home" @click="signInNewTollModelShow = true">录入新收费站</Button>
 					</Col>
 				</Row>
 			</div>
@@ -254,6 +254,19 @@
 				<Button type="primary" size="large" long  @click="removeUserModelSubmit">提 交</Button>
 			</div>
 		</Modal>
+		<!--登记新收费站-->
+		<Modal v-model="signInNewTollModelShow" title="录入新收费站">
+			<Form ref="formNewToll" :model="formNewTollData" :rules="signInNewTollRule">
+				<FormItem prop="tollName" label="新收费站名字">
+					<Input type="text" v-model="formNewTollData.tollName" style="width:auto" placeholder="如: 西安收费站">
+						<Icon type="md-home" slot="prepend"></Icon>
+					</Input>
+				</FormItem>
+			</Form>
+			<div slot="footer">
+				<Button type="primary" size="large" long  @click="formNewTollModelSubmit">提 交</Button>
+			</div>
+		</Modal>
 
 		<!--通用模态框-->
 		<Modal :title="generalModelTitle" v-model="generalModelShow" :mask-closable="false">
@@ -281,6 +294,7 @@
 				editUserPowerModelShow:false,
 				removeUserModelShow:false,
 				resetUserPwdModelShow:false,
+				signInNewTollModelShow:false,
 
 				generalModelTitle:"",
 				generalModelContent:"",
@@ -315,6 +329,9 @@
 				},
 				formRemoveUserModelData:{
 					workId:""
+				},
+				formNewTollData:{
+					tollName:""
 				},
 
 				carTypeList:[],
@@ -380,6 +397,12 @@
 					workId:[
 						{ required: true, message: '请输入员工工号', trigger: 'blur' },
 						{ pattern: /^[0-9]{9,9}$/, message: '员工工号不合法', trigger: 'blur' }
+					]
+				},
+				signInNewTollRule:{
+					tollName:[
+						{ required: true, message: '请输入收费站名', trigger: 'blur' },
+						{ type: 'string', max: 20, message: '长度在20字以内', trigger: 'blur' }
 					]
 				},
 
@@ -825,6 +848,56 @@
 				// 清空数据
 				this.removeUserModelShow = false;
 				this.formRemoveUserModelData.workId="";
+			},
+			formNewTollModelSubmit(){
+				var valipass = true;
+				this.$refs['formNewToll'].validate((valid) => {
+                    if (!valid) {
+						this.$Notice.error({
+								title: '表单填写有误',
+								desc: '请检查您的输入!'
+							});
+                        valipass = false;
+                    } 
+                })
+				if(!valipass) return;
+
+				this.$Loading.start(); // 进度条开始载入
+				var jsonMsg = {
+					"TollName":this.formNewTollData.tollName
+				};
+				var mvue = this;// 向内传vue实体
+				// 采用字符串方式发送
+				axios.post(Store.state.server+"/SignInTollServlet", qs.stringify(jsonMsg),
+					{
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							"Token":Store.state.token
+						}
+					})
+					.then(function (response) {
+						let res = response.data;
+						let isSuccess = res.code==="100";
+						if(isSuccess){
+							mvue.$Notice.success({
+								title: '添加新收费站成功',
+								desc: '收费站:'+jsonMsg.TollName+' 已添加！'
+							});
+							mvue.$Loading.finish(); // 进度条载入完毕
+						} else {
+							mvue.$Notice.error({
+								title: '添加新收费站失败',
+								desc: res.code==="508"?'您的权限不足':res.msg
+							});
+							mvue.$Loading.error(); // 进度条载入失败
+						}
+					})
+					.catch(function (error) {
+						mvue.$Loading.error(); // 进度条载入失败
+					});
+				// 清空数据
+				this.signInNewTollModelShow = false;
+				this.formNewTollData.tollName="";
 			}
 
 		}
