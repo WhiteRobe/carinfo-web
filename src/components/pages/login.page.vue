@@ -159,7 +159,11 @@
 							let token = res.data[0].Token; // 得到Tokan
 							var decoded = jwt.decode(token, {complete: true}); // 解析Token
 							mvue.$Loading.finish(); // 进度条载入完毕
-							Store.commit('online', token, decoded.payload.Power); // 设置登录状态
+							var payload={
+								"Token":token,
+								"Power":decoded.payload.Power
+								};
+							Store.commit('online', payload); // 设置登录状态
 							mvue.$router.push("/main"); // 跳转到主页面
 						} else {
 							Store.commit('offline'); // 设置登录状态

@@ -30,7 +30,11 @@ var app = new Vue({
       // console.log(token, token != null);
       if(token != null){
         var decoded = jwt.decode(token, {complete: true});
-        Store.commit('online', token, decoded.payload.Power); // 设置用户状态
+        var payload={
+          "Token":token,
+          "Power":decoded.payload.Power
+        };
+        Store.commit('online', payload); // 设置用户状态
       }
     },
     getCookie(cname){

@@ -6,12 +6,14 @@ import axios from 'axios';
 import WelcomePage from "./components/pages/welcome.page.vue";
 import LoginPage from "./components/pages/login.page.vue";
 import ConsolePage from "./components/pages/console.page.vue";
+import MainPage from "./components/pages/main.page.vue";
 
 export const AppRouter = new VueRouter({
     routes:[
         { path:"/", component: WelcomePage},
         { path:"/login", component: LoginPage},
-        { path:"/console", component: ConsolePage}
+        { path:"/console", component: ConsolePage},
+        { path:"/main", component: MainPage}
     ]
 });
 

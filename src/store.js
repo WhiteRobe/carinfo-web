@@ -13,20 +13,20 @@ export const Store = new Vuex.Store({
       // 当前token
       token: null,
       // 当前用户权限
-      power:1 // 默认权限最低
+      power:3 // 默认权限最低 0
     },
     mutations: {
-      online (state,token,power) {
-        state.token=token;
+      online (state, payload) {
+        state.token=payload.Token;
         state.loginState=true;
-        state.power = parseInt(power); // 保证为数字
-        document.cookie="Token="+token; // 向Cookie中写入token
-        // console.log("登记token",token,power);
+        state.power = parseInt(payload.Power); // 保证为数字
+        document.cookie="Token="+payload.Token; // 向Cookie中写入token
+        //console.log("登记token",payload.Token,payload.Power);
       },
       offline(state){
         state.loginState=false;
         state.token=null;
-        state.power = 1;
+        state.power = 0;
         document.cookie="Token=; expires=Thu, 01 Jan 1970 00:00:00 GMT"; // 注销token
       }
     }

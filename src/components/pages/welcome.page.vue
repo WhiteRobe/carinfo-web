@@ -12,7 +12,8 @@
 			}
 		},
 		beforeRouteEnter (to, from, next) {
-			next("/login"); // 直接跳转到登录页， 不在此处停留
+			//next("/login"); // 直接跳转到登录页， 不在此处停留
+			next('/main');
 		}
 	}
 </script>
