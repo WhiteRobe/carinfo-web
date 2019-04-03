@@ -100,8 +100,7 @@
                     ],
 					pw: [
                         { required: true, message: '请输入密码', trigger: 'blur' },
-						{ type: 'string', min: 6, message: '密码长度为6-16位', trigger: 'blur' },
-						{ type: 'string', max: 16, message: '密码长度为6-16位', trigger: 'blur' }
+						{ pattern: /^[A-Za-z0-9]{6,16}$/, message: '密码长度为6-16位英文数字组合', trigger: 'blur' }
                     ],
 					vc: [
                         { required: true, message: '请输入4位验证码', trigger: 'blur' },
@@ -152,10 +151,7 @@
 						let isSuccess = res.code==="100";
 						//console.log(res.MSG,isSuccess);
 						if(isSuccess){
-							mvue.$Notice.success({
-								title: '登录成功',
-								desc: '欢迎回来！员工:'+mvue.formData.id+'，即将为您进行跳转!'
-							});
+							
 							let token = res.data[0].Token; // 得到Tokan
 							var decoded = jwt.decode(token, {complete: true}); // 解析Token
 							mvue.$Loading.finish(); // 进度条载入完毕
@@ -164,6 +160,10 @@
 								"Power":decoded.payload.Power
 								};
 							Store.commit('online', payload); // 设置登录状态
+							mvue.$Notice.success({
+								title: '登录成功',
+								desc: '欢迎回来！'+ parseInt(payload.Power)>=2?'员工:':'管理员:' + mvue.formData.id+'，即将为您进行跳转!'
+							});
 							mvue.$router.push("/main"); // 跳转到主页面
 						} else {
 							Store.commit('offline'); // 设置登录状态

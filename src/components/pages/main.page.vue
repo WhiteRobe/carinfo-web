@@ -64,11 +64,29 @@
 					</Col>
 					<Col span="3">&nbsp;<!--留白--></Col>
 					<Col span="6">
-						<!--其它按钮-->
+						<Button type="success" size="large" long icon="md-person-add" @click="signInNewUserModelShow = true">录入新员工账户</Button>
 					</Col>
 					<Col span="3">&nbsp;<!--留白--></Col>
 					<Col span="6">
 						<!--其它按钮-->
+					</Col>
+				</Row>
+			</div>
+			<!--超级管理员界面-->
+			<div v-if="isSuperAdmin">
+				<br></br>
+				<Divider orientation="left">超级管理员界面</Divider>
+				<Row><!--n x 3 布局-->
+					<Col span="6">
+						<Button type="primary" size="large" long icon="md-refresh" @click="resetUserPwdModelShow = true">重设用户密码</Button>
+					</Col>
+					<Col span="3">&nbsp;<!--留白--></Col>
+					<Col span="6">
+						<Button type="success" size="large" long icon="md-create" @click="editUserPowerModelShow = true">调整用户权限</Button>
+					</Col>
+					<Col span="3">&nbsp;<!--留白--></Col>
+					<Col span="6">
+						<Button type="warning" size="large" long icon="md-remove-circle" @click="removeUserModelShow = true">移除员工账号</Button>
 					</Col>
 				</Row>
 			</div>
@@ -97,7 +115,7 @@
 						<Col span="1">&nbsp;<!--留白--></Col>
 						<Col span="15">
 							<FormItem prop="carId">
-								<Input type="text" v-model="formCheckBlackCarData.carId"   placeholder="请输入黑名单车辆的车牌后五位">
+								<Input type="text" v-model="formCheckBlackCarData.carId"  placeholder="请输入黑名单车辆的车牌后五位">
 								</Input>
 							</FormItem>
 						</Col>
@@ -164,11 +182,81 @@
 				<Button type="primary" size="large" long  @click="signInBlackCarModelSubmit">提 交</Button>
 			</div>
 		</Modal>
+		<!--录入新员工账户-->
+		<Modal v-model="signInNewUserModelShow" title="录入新员工账户">
+			<Form ref="formNewUser" :model="formSignInNewUserData" :rules="signInNewUserRule">
+				<FormItem prop="workId" label="工号 / 账号">
+					<Input type="text" v-model="formSignInNewUserData.workId" style="width:auto" placeholder="请输入员工工号/账号">
+						<Icon type="md-person" slot="prepend"></Icon>
+					</Input>
+				</FormItem>
+				<FormItem prop="workerName" label="员工的姓名">
+					<Input type="text" v-model="formSignInNewUserData.workerName" style="width:auto" placeholder="请输入员工名字">
+						<Icon type="md-bookmark" slot="prepend"></Icon>
+					</Input>
+				</FormItem>
+				<FormItem prop="duty" label="员工的职责">
+					<Select v-model="formSignInNewUserData.duty" size="default" style="width:auto" placeholder="请选择员工的职责">
+						<Option v-for="item in dutyList" :value="item" :key="item">{{ item }}</Option>
+					</Select>
+				</FormItem>
+			</Form>
+			<div slot="footer">
+				<Button type="primary" size="large" long  @click="signInNewUserModelSubmit">提 交</Button>
+			</div>
+		</Modal>
+		<!--重设用户密码-->
+		<Modal v-model="resetUserPwdModelShow" title="重设用户密码">
+			<Form ref="formResetUserPwd" :model="formResetUserPwdModelData" :rules="resetUserPwdRule">
+				<FormItem prop="workId" label="工号 / 账号">
+					<Input type="text" v-model="formResetUserPwdModelData.workId" style="width:auto" placeholder="请输入员工工号/账号">
+						<Icon type="md-person" slot="prepend"></Icon>
+					</Input>
+				</FormItem>
+				<FormItem prop="pwd" label="设置新密码">
+					<Input type="text" v-model="formResetUserPwdModelData.pwd" style="width:auto" placeholder="请输入他的新密码">
+						<Icon type="ios-key" slot="prepend"></Icon>
+					</Input>
+				</FormItem>
+			</Form>
+			<div slot="footer">
+				<Button type="primary" size="large" long  @click="resetUserPwdModelSubmit">提 交</Button>
+			</div>
+		</Modal>
+		<!--重设用户权限-->
+		<Modal v-model="editUserPowerModelShow" title="重设用户密码">
+			<Form ref="formEditUserPower" :model="formEditUserPowerModelData" :rules="editUserPowerRule">
+				<FormItem prop="workId" label="工号 / 账号">
+					<Input type="text" v-model="formEditUserPowerModelData.workId" style="width:auto" placeholder="请输入员工工号/账号">
+						<Icon type="md-person" slot="prepend"></Icon>
+					</Input>
+				</FormItem>
+				<FormItem prop="power" label="设置新权限">
+					<Select v-model="formEditUserPowerModelData.power" size="default" style="width:auto" placeholder="请选择员工的职责">
+						<Option v-for="item in powerList" :value="item" :key="item">{{ item }}</Option>
+					</Select>
+				</FormItem>
+			</Form>
+			<div slot="footer">
+				<Button type="primary" size="large" long  @click="editUserPowerModelSubmit">提 交</Button>
+			</div>
+		</Modal>
+		<!--移除员工账号-->
+		<Modal v-model="removeUserModelShow" title="移除员工账号">
+			<Form ref="formRemoveUserPower" :model="formRemoveUserModelData" :rules="removeUserRule">
+				<FormItem prop="workId" label="工号 / 账号">
+					<Input type="text" v-model="formRemoveUserModelData.workId" style="width:auto" placeholder="请输入员工工号/账号">
+						<Icon type="md-person" slot="prepend"></Icon>
+					</Input>
+				</FormItem>
+			</Form>
+			<div slot="footer">
+				<Button type="primary" size="large" long  @click="removeUserModelSubmit">提 交</Button>
+			</div>
+		</Modal>
+
 		<!--通用模态框-->
-		<Modal
-			:title="generalModelTitle"
-			v-model="generalModelShow"
-			:mask-closable="false">
+		<Modal :title="generalModelTitle" v-model="generalModelShow" :mask-closable="false">
 			<p>{{generalModelContent}}</p>
 		</Modal>
 	</Row>
@@ -189,8 +277,14 @@
 				signInNewBlackCarModelShow:false,
 				checkBlackCarModelShow:false,
 				generalModelShow:false,
+				signInNewUserModelShow:false,
+				editUserPowerModelShow:false,
+				removeUserModelShow:false,
+				resetUserPwdModelShow:false,
+
 				generalModelTitle:"",
 				generalModelContent:"",
+
 				formNewCarTypeData: {
 					newCarType:""
 				},
@@ -206,14 +300,32 @@
 					carIdPartII:"A",
 					carId:""
 				},
+				formSignInNewUserData:{
+					workId:"",
+					workerName:"",
+					duty:""
+				},
+				formResetUserPwdModelData:{
+					workId:"",
+					pwd:""
+				},
+				formEditUserPowerModelData:{
+					workId:"",
+					power:""
+				},
+				formRemoveUserModelData:{
+					workId:""
+				},
+
 				carTypeList:[],
+
 				signInewCarTypeRule:{
 					newCarType:[
 						{ required: true, message: '请输入其车型', trigger: 'blur' },
 						{ type: 'string', max: 10, message: '长度在10字以内', trigger: 'blur' }
 					]
 				},
-				signInBlackCarRule : {
+				signInBlackCarRule:{
 					newCarId:[
 						{ required: true, message: '请输入车牌号', trigger: 'blur' },
 						{ pattern: /^[0-9A-Z]{5,5}$/, message: '车牌号不合法', trigger: 'blur' }
@@ -232,15 +344,59 @@
 						{ pattern: /^[0-9A-Z]{5,5}$/, message: '车牌号不合法', trigger: 'blur' }
 					]
 				},
+				signInNewUserRule:{
+					workId:[
+						{ required: true, message: '请输入员工工号', trigger: 'blur' },
+						{ pattern: /^[0-9]{9,9}$/, message: '员工工号不合法', trigger: 'blur' }
+					],
+					workerName:[
+						{ required: true, message: '请输入员工名字', trigger: 'blur' },
+						{ type: 'string', max: 5, message: '长度在5字以内', trigger: 'blur' }
+					],
+					duty:[
+						{ required: true, message: '请选择职责', trigger: 'blur' }
+					]
+				},
+				resetUserPwdRule:{
+					workId:[
+						{ required: true, message: '请输入员工工号', trigger: 'blur' },
+						{ pattern: /^[0-9]{9,9}$/, message: '员工工号不合法', trigger: 'blur' }
+					],
+					pwd:[
+						{ required: true, message: '请输入员工名字', trigger: 'blur' },
+						{ pattern: /^[A-Za-z0-9]{6,16}$/, message: '密码长度为6-16位英文数字组合', trigger: 'blur' }
+					]
+				},
+				editUserPowerRule:{
+					workId:[
+						{ required: true, message: '请输入员工工号', trigger: 'blur' },
+						{ pattern: /^[0-9]{9,9}$/, message: '员工工号不合法', trigger: 'blur' }
+					],
+					power:[
+						{ required: true, message: '请选择赋予权限', trigger: 'blur' }
+					]
+				},
+				removeUserRule:{
+					workId:[
+						{ required: true, message: '请输入员工工号', trigger: 'blur' },
+						{ pattern: /^[0-9]{9,9}$/, message: '员工工号不合法', trigger: 'blur' }
+					]
+				},
+
 				provinceList:['京','津','冀','晋','蒙','辽','吉','黑','沪','苏','浙','皖',
 								'闽','赣','鲁','豫','鄂','湘','粤','桂','琼','渝','川','黔',
 								'滇','藏','陕','甘','青','宁','新','台','港','澳'],
-				alphabetList:['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+				alphabetList:['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'],
+				dutyList:['其它','员工','班长','站长'],
+				powerList:['员工', '管理员', '超级管理员'] // 权限应依次为1 2 3...
 			}
 		},
 		computed:{
 			isAdmin(){
 				return Store.state.power>=2;
+			},
+			isSuperAdmin(){
+				return Store.state.power>=3;
 			}
 		},
 		methods:{
@@ -459,6 +615,216 @@
 					// 登记新黑名单车辆的对话框关闭时 清空拉取的车型数据 以便重新读取
 					this.carTypeList.splice(0,this.carTypeList.length);
 				}
+			},
+			signInNewUserModelSubmit(){
+				var valipass = true;
+				this.$refs['formNewUser'].validate((valid) => {
+                    if (!valid) {
+						this.$Notice.error({
+								title: '表单填写有误',
+								desc: '请检查您的输入!'
+							});
+                        valipass = false;
+                    } 
+                })
+				if(!valipass) return;
+
+				this.$Loading.start(); // 进度条开始载入
+				var jsonMsg = {
+					"WorkId":this.formSignInNewUserData.workId,
+					"WorkerName":this.formSignInNewUserData.workerName,
+					"Duty":this.formSignInNewUserData.duty
+				};
+				var mvue = this;// 向内传vue实体
+				// 采用字符串方式发送
+				axios.post(Store.state.server+"/RegisterServlet", qs.stringify(jsonMsg),
+					{
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							"Token":Store.state.token
+						}
+					})
+					.then(function (response) {
+						let res = response.data;
+						let isSuccess = res.code==="100";
+						//console.log(res.MSG,isSuccess);
+						if(isSuccess){
+							mvue.$Notice.success({
+								title: '注册新员工用户成功',
+								desc: '新员工用户:'+jsonMsg.WorkerName+'已录入\n(默认权限为一般用户,默认密码为工号后六位)'
+							});
+							mvue.$Loading.finish(); // 进度条载入完毕
+						} else {
+							mvue.$Notice.error({
+								title: '登记新员工用户失败',
+								desc: res.code==="101"?'数据库中已存在该用户':res.msg
+							});
+							mvue.$Loading.error(); // 进度条载入失败
+						}
+					})
+					.catch(function (error) {
+						mvue.$Loading.error(); // 进度条载入失败
+					});
+				// 清空数据
+				this.signInNewUserModelShow = false;
+				this.formSignInNewUserData.workId="";
+				this.formSignInNewUserData.workerName="";
+				this.formSignInNewUserData.duty="";
+			},
+			resetUserPwdModelSubmit(){
+				var valipass = true;
+				this.$refs['formResetUserPwd'].validate((valid) => {
+                    if (!valid) {
+						this.$Notice.error({
+								title: '表单填写有误',
+								desc: '请检查您的输入!'
+							});
+                        valipass = false;
+                    } 
+                })
+				if(!valipass) return;
+
+				this.$Loading.start(); // 进度条开始载入
+				var jsonMsg = {
+					"AccountId":this.formResetUserPwdModelData.workId,
+					"NewPwd":md5(this.formResetUserPwdModelData.pwd + Store.state.salt),
+				};
+				var mvue = this;// 向内传vue实体
+				// 采用字符串方式发送
+				axios.post(Store.state.server+"/ResetPasswordServlet", qs.stringify(jsonMsg),
+					{
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							"Token":Store.state.token
+						}
+					})
+					.then(function (response) {
+						let res = response.data;
+						let isSuccess = res.code==="100";
+						//console.log(res.MSG,isSuccess);
+						if(isSuccess){
+							mvue.$Notice.success({
+								title: '重设用户密码成功',
+								desc: '员工用户:'+jsonMsg.AccountId+' 的密码已重设。'
+							});
+							mvue.$Loading.finish(); // 进度条载入完毕
+						} else {
+							mvue.$Notice.error({
+								title: '重设用户密码失败',
+								desc: res.code==="508"?'您的权限不足':res.msg
+							});
+							mvue.$Loading.error(); // 进度条载入失败
+						}
+					})
+					.catch(function (error) {
+						mvue.$Loading.error(); // 进度条载入失败
+					});
+				// 清空数据
+				this.resetUserPwdModelShow = false;
+				this.formResetUserPwdModelData.workId="";
+				this.formResetUserPwdModelData.pwd="";
+			},
+			editUserPowerModelSubmit(){
+				var valipass = true;
+				this.$refs['formEditUserPower'].validate((valid) => {
+                    if (!valid) {
+						this.$Notice.error({
+								title: '表单填写有误',
+								desc: '请检查您的输入!'
+							});
+                        valipass = false;
+                    } 
+                })
+				if(!valipass) return;
+
+				this.$Loading.start(); // 进度条开始载入
+				var jsonMsg = {
+					"AccountId":this.formEditUserPowerModelData.workId,
+					"Power":this.powerList.indexOf(this.formEditUserPowerModelData.power)+1,
+				};
+				var mvue = this;// 向内传vue实体
+				// 采用字符串方式发送
+				axios.post(Store.state.server+"/ResetPowerServlet", qs.stringify(jsonMsg),
+					{
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							"Token":Store.state.token
+						}
+					})
+					.then(function (response) {
+						let res = response.data;
+						let isSuccess = res.code==="100";
+						if(isSuccess){
+							mvue.$Notice.success({
+								title: '移除员工账号成功',
+								desc: '员工用户:(工号)'+jsonMsg.AccountId+' 的权限已设为:' + mvue.powerList[parseInt(jsonMsg.Power)-1]
+							});
+							mvue.$Loading.finish(); // 进度条载入完毕
+						} else {
+							mvue.$Notice.error({
+								title: '移除员工账号失败',
+								desc: res.code==="508"?'您的权限不足':res.msg
+							});
+							mvue.$Loading.error(); // 进度条载入失败
+						}
+					})
+					.catch(function (error) {
+						mvue.$Loading.error(); // 进度条载入失败
+					});
+				// 清空数据
+				this.editUserPowerModelShow = false;
+				this.formEditUserPowerModelData.workId="";
+				this.formEditUserPowerModelData.power="";
+			},
+			removeUserModelSubmit(){
+				var valipass = true;
+				this.$refs['formRemoveUserPower'].validate((valid) => {
+                    if (!valid) {
+						this.$Notice.error({
+								title: '表单填写有误',
+								desc: '请检查您的输入!'
+							});
+                        valipass = false;
+                    } 
+                })
+				if(!valipass) return;
+
+				this.$Loading.start(); // 进度条开始载入
+				var jsonMsg = {
+					"WorkId":this.formRemoveUserModelData.workId
+				};
+				var mvue = this;// 向内传vue实体
+				// 采用字符串方式发送
+				axios.post(Store.state.server+"/RemoveWorkerServlet", qs.stringify(jsonMsg),
+					{
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							"Token":Store.state.token
+						}
+					})
+					.then(function (response) {
+						let res = response.data;
+						let isSuccess = res.code==="100";
+						if(isSuccess){
+							mvue.$Notice.success({
+								title: '重设用户权限成功',
+								desc: '员工用户:(工号)'+jsonMsg.WorkId+'的账号已注销！'
+							});
+							mvue.$Loading.finish(); // 进度条载入完毕
+						} else {
+							mvue.$Notice.error({
+								title: '重设用户权限失败',
+								desc: res.code==="508"?'您的权限不足':res.msg
+							});
+							mvue.$Loading.error(); // 进度条载入失败
+						}
+					})
+					.catch(function (error) {
+						mvue.$Loading.error(); // 进度条载入失败
+					});
+				// 清空数据
+				this.removeUserModelShow = false;
+				this.formRemoveUserModelData.workId="";
 			}
 
 		}
