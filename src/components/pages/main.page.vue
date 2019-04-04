@@ -7,33 +7,51 @@
 			<!--车辆管理-->
 			<div>
 				<Divider orientation="left">车辆管理</Divider>
-				<Row><!--n x 3 布局-->
-					<Col span="6">
-						<Button icon="ios-car" size="large" long to="/">升 档 车 辆</Button>
-					</Col>
-					<Col span="3">&nbsp;<!--留白--></Col>
-					<Col span="6">
-						<Button icon="ios-car" size="large" long to="/">运输联合收割机车辆</Button>
-					</Col>
-					<Col span="3">&nbsp;<!--留白--></Col>
-					<Col span="6">
-						<Button icon="ios-car" size="large" long to="/">专用作业车 (入 口)</Button>
-					</Col>
-				</Row>
-				<br></br>
-				<Row><!--n x 3 布局-->
-					<Col span="6">
-						<Button icon="ios-car" size="large" long to="/">专用作业车 (出 口)</Button>
-					</Col>
-					<Col span="3">&nbsp;<!--留白--></Col>
-					<Col span="6">
-						<Button icon="ios-car" size="large" long to="/">大件运输车 (入 口)</Button>
-					</Col>
-					<Col span="3">&nbsp;<!--留白--></Col>
-					<Col span="6">
-					<Button icon="ios-car" size="large" long to="/">大件运输车 (出 口)</Button>
-					</Col>
-				</Row>
+				<Card :bordered="false">
+					<p slot="title">检索车辆信息</p>
+					<Form ref="formSearch" :model="formSearchData" :rules="formSearchRule">
+						<FormItem prop="carId">
+							<Input search enter-button placeholder="请输入车牌号，若缺省将搜索所有该类型车辆的数据" @on-search="searchSubmit"  @on-enter="searchSubmit">
+								<Select v-model="formSearchData.carIdPartI" slot="prepend" style="width:auto">
+									<Option v-for="item in provinceList" :value="item" :key="item">{{ item }}</Option>
+								</Select>
+							</Input>
+						</FormItem>
+						<FormItem prop="beanType" label="数据类型">
+							<Select v-model="formSearchData.beanType" style="width: auto" placeholder="请选择数据类型">
+								<!--value的枚举值参见DDTOType.java-->
+								<Option value="CAR_ESCAPE">升档车辆</Option>
+								<Option value="CAR_REAPER">联合收割机</Option>
+								<Option value="CAR_SPECIAL_ENTRY">专用作业车(入口)</Option>
+								<Option value="CAR_SPECIAL_EXIT">专用作业车(出口)</Option>
+								<Option value="CAR_HUGE_ENTRY">大件运输车(入口)</Option>
+								<Option value="CAR_HUGE_EXIT">大件运输车(出口)</Option>
+							</Select>
+						</FormItem>
+						<FormItem label="按时间筛选">
+							<Row>
+								<Col span="5">
+									<FormItem prop="dateBegin">
+										<DatePicker type="date" style="width: auto" format="yyyy-MM-dd" placeholder="请选择开始日期"  @on-change="setDateBegin"></DatePicker>
+									</FormItem>
+								</Col>
+								<Col span="1">&nbsp;至</Col>
+								<Col span="5">
+									<FormItem prop="dateEnd">
+										<DatePicker type="date" style="width: auto" format="yyyy-MM-dd" placeholder="请选择结束日期"  @on-change="setDateEnd"></DatePicker>
+									</FormItem>
+								</Col>
+							</Row>
+						</FormItem>
+						<FormItem prop="shift" label="班次">
+							<Select v-model="formSearchData.shift" style="width: auto" sise="large" placeholder="请选择班次，可缺省">
+								<Option value="早班">早班</Option>
+								<Option value="中班">中班</Option>
+								<Option value="晚班">晚班</Option>
+							</Select>
+						</FormItem>
+					</Form>
+				</Card>
 			</div>
 			<!--通用功能-->
 			<div>
@@ -146,14 +164,14 @@
 					<Row>
 						<Col span="2">
 							<FormItem >
-								<Select v-model="formNewBlackCarData.newCarIdPartI" size="small" style="width:auto">
+								<Select v-model="formNewBlackCarData.newCarIdPartI" size="default" style="width:auto">
 									<Option v-for="item in provinceList" :value="item" :key="item">{{ item }}</Option>
 								</Select>
 							</FormItem>
 						</Col>
 						<Col span="2">
 							<FormItem >
-								<Select v-model="formNewBlackCarData.newCarIdPartII" size="small" style="width:auto">
+								<Select v-model="formNewBlackCarData.newCarIdPartII" size="default" style="width:auto">
 									<Option v-for="item in alphabetList" :value="item" :key="item">{{ item }}</Option>
 								</Select>
 							</FormItem>
@@ -333,6 +351,15 @@
 				formNewTollData:{
 					tollName:""
 				},
+				formSearchData:{
+					beanType:"", 
+					carIdPartI:"",
+					carId:"",
+					shift:"",
+					dateBegin:"",
+					dateEnd:"",
+					station:""
+				},
 
 				carTypeList:[],
 
@@ -404,6 +431,26 @@
 						{ required: true, message: '请输入收费站名', trigger: 'blur' },
 						{ type: 'string', max: 20, message: '长度在20字以内', trigger: 'blur' }
 					]
+				},
+				formSearchRule:{
+					beanType:[
+						{ required: true, message: '请选择其车型', trigger: 'blur' }
+					],
+					// carId:{
+
+					// },
+					// shift:{
+
+					// },
+					dateBegin:[
+						{ required: true, message: '请选择开始日期', trigger: 'blur' }
+					],
+					dateEnd:[
+						{ required: true, message: '请选择结束日期', trigger: 'blur' }
+					]
+					// station:{
+
+					// }
 				},
 
 				provinceList:['京','津','冀','晋','蒙','辽','吉','黑','沪','苏','浙','皖',
@@ -898,8 +945,86 @@
 				// 清空数据
 				this.signInNewTollModelShow = false;
 				this.formNewTollData.tollName="";
+			},
+			searchSubmit(){
+				console.log(this.formSearchData.dateBegin,this.formSearchData.dateEnd);
+				var valipass = true;
+				this.$refs['formSearch'].validate((valid) => {
+                    if (!valid) {
+						this.$Notice.error({
+								title: '表单填写有误',
+								desc: '请检查您的输入!'
+							});
+                        valipass = false;
+                    } 
+                });
+				if(!valipass) return;
+
+				this.$Loading.start(); // 进度条开始载入
+				var jsonMsg = {
+					"BeanType":this.formSearchData.beanType,
+					"CarId":this.formSearchData.carIdPartI+this.formSearchData.carId,
+					"Shift":this.formSearchData.shift,
+					"DateBegin":this.formSearchData.dateBegin,
+					"DateEnd":this.formSearchData.dateEnd,
+					"Station":this.formSearchData.station,
+					"Page":1
+				};
+				var mvue = this;// 向内传vue实体
+				// 采用字符串方式发送
+				axios.post(Store.state.server+"/SearchCarBeanServlet", qs.stringify(jsonMsg),
+					{
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							"Token":Store.state.token
+						}
+					})
+					.then(function (response) {
+						mvue.$Loading.finish(); // 进度条载入完毕
+					})
+					.catch(function (error) {
+						mvue.$Loading.error(); // 进度条载入失败
+					});
+			},
+			setDateBegin(value,type){
+				this.$refs['formSearch'].validate((valid) => {});
+				this.formSearchData.dateBegin=value;
+			},
+			setDateEnd(value,type){
+				this.$refs['formSearch'].validate((valid) => {});
+				this.formSearchData.dateEnd=value;
 			}
 
 		}
     }
 </script>
+
+<!--
+<Row>
+	<Col span="6">
+		<Button icon="ios-car" size="large" long to="/">升 档 车 辆</Button>
+	</Col>
+	<Col span="3">&nbsp;</Col>
+	<Col span="6">
+		<Button icon="ios-car" size="large" long to="/">运输联合收割机车辆</Button>
+	</Col>
+	<Col span="3">&nbsp;</Col>
+	<Col span="6">
+		<Button icon="ios-car" size="large" long to="/">专用作业车 (入 口)</Button>
+	</Col>
+</Row>
+<br></br>
+<Row>
+	<Col span="6">
+		<Button icon="ios-car" size="large" long to="/">专用作业车 (出 口)</Button>
+	</Col>
+	<Col span="3">&nbsp;</Col>
+	<Col span="6">
+		<Button icon="ios-car" size="large" long to="/">大件运输车 (入 口)</Button>
+	</Col>
+	<Col span="3">&nbsp;</Col>
+	<Col span="6">
+	<Button icon="ios-car" size="large" long to="/">大件运输车 (出 口)</Button>
+	</Col>
+</Row>
+-->
