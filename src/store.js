@@ -5,7 +5,8 @@ Vue.use(Vuex);
 export const Store = new Vuex.Store({
     state: {
       server:"/car", // 服务器发布地址
-      imgDir:"/car/res/img", // 图片资源地址
+      imgDir:"/car/data/img/", // 图片资源地址
+      imgDir:"/car/data/doc/", // doc资源地址
       // 全局状态
       loginState: false,
       // 前端盐

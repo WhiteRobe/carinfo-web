@@ -8,11 +8,11 @@
 			<div>
 				<Divider orientation="left">车辆管理</Divider>
 				<Card :bordered="false">
-					<p slot="title">检索车辆信息</p>
+					<p slot="title">车辆信息检索</p>
 					<Form ref="formSearch" :model="formSearchData" :rules="formSearchRule">
 						<FormItem prop="carId">
 							<Input search enter-button placeholder="请输入车牌号，若缺省将搜索所有该类型车辆的数据" @on-search="searchSubmit"  @on-enter="searchSubmit">
-								<Select v-model="formSearchData.carIdPartI" slot="prepend" style="width:auto">
+								<Select v-model="formSearchData.carIdPartI" slot="prepend" style="width:auto" placeholder="省份简称">
 									<Option v-for="item in provinceList" :value="item" :key="item">{{ item }}</Option>
 								</Select>
 							</Input>
@@ -43,7 +43,8 @@
 								</Col>
 							</Row>
 						</FormItem>
-						<FormItem prop="shift" label="班次">
+						<Divider>其它筛选项</Divider>
+						<FormItem prop="shift" label="按班次筛选">
 							<Select v-model="formSearchData.shift" style="width: auto" sise="large" placeholder="请选择班次，可缺省">
 								<Option value="早班">早班</Option>
 								<Option value="中班">中班</Option>
@@ -353,12 +354,12 @@
 				},
 				formSearchData:{
 					beanType:"", 
-					carIdPartI:"",
+					carIdPartI:"陕",
 					carId:"",
 					shift:"",
 					dateBegin:"",
 					dateEnd:"",
-					station:""
+					station:"" // 入口站
 				},
 
 				carTypeList:[],
@@ -436,9 +437,9 @@
 					beanType:[
 						{ required: true, message: '请选择其车型', trigger: 'blur' }
 					],
-					// carId:{
-
-					// },
+					carId:[
+						{ pattern: /^[A-Z]{1,1}[0-9A-Z]{5,5}$|\s+/, message: '车牌号不合法', trigger: 'blur' }
+					],
 					// shift:{
 
 					// },
@@ -959,6 +960,18 @@
                     } 
                 });
 				if(!valipass) return;
+				let url='/search?'+
+					'beanType='+ this.formSearchData.beanType +
+					'&&carIdPartI='+ this.formSearchData.carIdPartI +
+					'&&carId='+ this.formSearchData.carId +
+					'&&shift='+ this.formSearchData.shift +
+					'&&dateBegin='+ this.formSearchData.dateBegin +
+					'&&dateEnd='+ this.formSearchData.dateEnd +
+					'&&station='+ this.formSearchData.station;
+				console.log()
+
+				this.$router.push(url); // 返回首页
+				return;
 
 				this.$Loading.start(); // 进度条开始载入
 				var jsonMsg = {
@@ -970,6 +983,9 @@
 					"Station":this.formSearchData.station,
 					"Page":1
 				};
+				if(this.formSearchData.carId===""){
+					jsonMsg.CarId = ""; // 车牌号可以为空
+				}
 				var mvue = this;// 向内传vue实体
 				// 采用字符串方式发送
 				axios.post(Store.state.server+"/SearchCarBeanServlet", qs.stringify(jsonMsg),
