@@ -4,9 +4,10 @@ Vue.use(Vuex);
 
 export const Store = new Vuex.Store({
     state: {
+      protocol:"http",// 文件传输协议
       server:"/car", // 服务器发布地址
       imgDir:"/car/data/img/", // 图片资源地址
-      imgDir:"/car/data/doc/", // doc资源地址
+      docDir:"/car/data/doc/", // doc资源地址
       // 全局状态
       loginState: false,
       // 前端盐

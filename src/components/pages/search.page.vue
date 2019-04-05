@@ -23,6 +23,7 @@
 						<Icon type="ios-bulb-outline" slot="icon"></Icon>
 						<template slot="desc">请检查您的搜索关键字及筛选方案</template>
 					</Alert>
+					<Button size="default" long type="primary"><Icon type="ios-arrow-back" />返回首页</Button>
 				</div>
 				<div v-else>
 					<Card :bordered="false" dis-hover>
@@ -94,9 +95,16 @@
 			this.getPageData();
 		},
 		computed:{
-
+			
 		},
 		methods:{
+			tokenLost(str){
+				let pattern = /^20[1-9]{1,1}$/;
+				if(pattern.test(str)){
+					return true;
+				}
+				return false;
+			},
 			backToMainPageEvent(){
 				this.$router.push('/main'); // 返回首页
 			},
@@ -110,7 +118,7 @@
 				this.$Loading.start();
 				this.spinShow = true;
 				var mvue = this;
-				console.log(this.formSearchData);
+				//console.log(this.formSearchData);
 				axios.get(Store.state.server+'/SearchCarBeanServlet',
 					{
 						headers: {
@@ -132,6 +140,16 @@
 						mvue.spinShow = false;
 						let res = response.data;
 						let isSuccess = res.code==="100";
+						if(mvue.tokenLost(res.code)){
+							mvue.$Notice.warning({
+								title: '登陆已过期',
+								desc: '请重新登陆'
+							});
+							Store.commit('offline'); // 设置登录状态
+							mvue.$Loading.error(); // 进度条载入失败
+							mvue.$router.push("/login"); // 跳转到主页面
+							return;
+						}
 						if(isSuccess){
 							console.log(res);
 							// 最后一行为一个数字，即总搜索命中数

@@ -21,19 +21,10 @@ export const AppRouter = new VueRouter({
 
 // 路由守卫
 AppRouter.beforeEach((to, from, next) => {
-    if(to.path.indexOf('/console')!=-1 || to.path.indexOf('/search')!=-1 || to.path.indexOf('/main')!=-1){
-        // 禁止无权限用户进入控制台页面
-        //return checkAuth(next);
-        if(Store.state.power>=1) next(); // 权限足够则跳转
-        else next("/login");
+    if(to.path.indexOf('/login')==-1 && Store.state.power<1){ 
+        console.log('您的权限不足，请先登陆');
+        Store.commit('offline');
+        return next("/login");// 但凡不是访问登录页且权限小于1的(非系统用户)，跳转回登录页
     }
-	return next();
-});
-
-AppRouter.afterEach ((to, from, next) => {
-    if(Store.state.token == null && to.path.indexOf('/login')!=-1){
-        
-    }
-    console.log(Store.state.token);
-	//return next();
+    return next();// 权限足够则跳转
 });

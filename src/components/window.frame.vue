@@ -86,7 +86,7 @@
             handleMenuItemSelect(menuName){
                 switch(menuName){
                     case 'MINE_WIDGE':
-                        this.$refs.mineWidge.initData();
+                        this.$refs.mineWidge.canShow = true;
                         break;
                     case 'LOGOUT':
                         this.logout();
@@ -100,7 +100,8 @@
                 axios.get(Store.state.server+"/LogoutServlet",
                     {   
                         headers: {
-							'Content-Type': 'application/x-www-form-urlencoded'
+							'Content-Type': 'application/x-www-form-urlencoded',
+                            "Token":Store.state.token
 						}
                     })
                     .then(function (response) {

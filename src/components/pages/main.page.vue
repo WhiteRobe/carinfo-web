@@ -11,7 +11,8 @@
 					<p slot="title">车辆信息检索</p>
 					<Form ref="formSearch" :model="formSearchData" :rules="formSearchRule">
 						<FormItem prop="carId">
-							<Input search enter-button placeholder="请输入车牌号，若缺省将搜索所有该类型车辆的数据" @on-search="searchSubmit"  @on-enter="searchSubmit">
+							<Input search enter-button placeholder="请输入除省份简称外的车牌号,如A12345(若缺省将搜索所有该类型车辆的数据)"
+							 @on-search="searchSubmit"  @on-enter="searchSubmit" v-model="formSearchData.carId">
 								<Select v-model="formSearchData.carIdPartI" slot="prepend" style="width:auto" placeholder="省份简称">
 									<Option v-for="item in provinceList" :value="item" :key="item">{{ item }}</Option>
 								</Select>
@@ -233,7 +234,7 @@
 					</Input>
 				</FormItem>
 				<FormItem prop="pwd" label="设置新密码">
-					<Input type="text" v-model="formResetUserPwdModelData.pwd" style="width:auto" placeholder="请输入他的新密码">
+					<Input type="password" v-model="formResetUserPwdModelData.pwd" style="width:auto" placeholder="请输入他的新密码">
 						<Icon type="ios-key" slot="prepend"></Icon>
 					</Input>
 				</FormItem>
@@ -408,7 +409,7 @@
 						{ pattern: /^[0-9]{9,9}$/, message: '员工工号不合法', trigger: 'blur' }
 					],
 					pwd:[
-						{ required: true, message: '请输入员工名字', trigger: 'blur' },
+						{ required: true, message: '请输入新密码', trigger: 'blur' },
 						{ pattern: /^[A-Za-z0-9]{6,16}$/, message: '密码长度为6-16位英文数字组合', trigger: 'blur' }
 					]
 				},
@@ -438,7 +439,7 @@
 						{ required: true, message: '请选择其车型', trigger: 'blur' }
 					],
 					carId:[
-						{ pattern: /^[A-Z]{1,1}[0-9A-Z]{5,5}$|\s+/, message: '车牌号不合法', trigger: 'blur' }
+						{ pattern: /^[A-Z]{1,1}[0-9A-Z]{5,5}$|\s+/, message: '车牌号不合法,输入车牌后六位或防空;正确格式如：A12345', trigger: 'blur' }
 					],
 					// shift:{
 
@@ -471,6 +472,13 @@
 			}
 		},
 		methods:{
+			tokenLost(str){
+				let pattern = /^20[1-9]{1,1}$/;
+				if(pattern.test(str)){
+					return true;
+				}
+				return false;
+			},
 			signInNewCarTypeModelSubmit(){
 				var valipass = true;
 				this.$refs['formNewCarType'].validate((valid) => {
@@ -501,6 +509,16 @@
 						let res = response.data;
 						let isSuccess = res.code==="100";
 						//console.log(res.MSG,isSuccess);
+						if(mvue.tokenLost(res.code)){
+							mvue.$Notice.warning({
+								title: '登陆已过期',
+								desc: '请重新登陆'
+							});
+							Store.commit('offline'); // 设置登录状态
+							mvue.$Loading.error(); // 进度条载入失败
+							mvue.$router.push("/login"); // 跳转到主页面
+							return;
+						}
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '登记新车型成功',
@@ -557,6 +575,16 @@
 						let res = response.data;
 						let isSuccess = res.code==="100";
 						//console.log(res.MSG,isSuccess);
+						if(mvue.tokenLost(res.code)){
+							mvue.$Notice.warning({
+								title: '登陆已过期',
+								desc: '请重新登陆'
+							});
+							Store.commit('offline'); // 设置登录状态
+							mvue.$Loading.error(); // 进度条载入失败
+							mvue.$router.push("/login"); // 跳转到主页面
+							return;
+						}
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '登记新黑名单车辆成功',
@@ -590,13 +618,24 @@
 				axios.get(Store.state.server+"/GetCarTypeList",
                     {   
                         headers: {
-							'Content-Type': 'application/x-www-form-urlencoded'
+							'Content-Type': 'application/x-www-form-urlencoded',
+							"Token":Store.state.token
 						}
                     })
                     .then(function (response) {
                         let res = response.data;
                         let isSuccess = res.code=="100";
                         //console.log(res,isSuccess);
+						if(mvue.tokenLost(res.code)){
+							mvue.$Notice.warning({
+								title: '登陆已过期',
+								desc: '请重新登陆'
+							});
+							Store.commit('offline'); // 设置登录状态
+							mvue.$Loading.error(); // 进度条载入失败
+							mvue.$router.push("/login"); // 跳转到主页面
+							return;
+						}
                         if(isSuccess){
 							let dataList = res.data;
 							for(var i=0;i<dataList.length;i++){
@@ -650,6 +689,16 @@
 						let res = response.data;
 						let isSuccess = res.code==="100";
 						//console.log(res.MSG,isSuccess);
+						if(mvue.tokenLost(res.code)){
+							mvue.$Notice.warning({
+								title: '登陆已过期',
+								desc: '请重新登陆'
+							});
+							Store.commit('offline'); // 设置登录状态
+							mvue.$Loading.error(); // 进度条载入失败
+							mvue.$router.push("/login"); // 跳转到主页面
+							return;
+						}
 						if(isSuccess){
 							if(res.data[0].Result==="false"){
 								mvue.$Message.info({
@@ -719,6 +768,16 @@
 						let res = response.data;
 						let isSuccess = res.code==="100";
 						//console.log(res.MSG,isSuccess);
+						if(mvue.tokenLost(res.code)){
+							mvue.$Notice.warning({
+								title: '登陆已过期',
+								desc: '请重新登陆'
+							});
+							Store.commit('offline'); // 设置登录状态
+							mvue.$Loading.error(); // 进度条载入失败
+							mvue.$router.push("/login"); // 跳转到主页面
+							return;
+						}
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '注册新员工用户成功',
@@ -758,7 +817,7 @@
 				this.$Loading.start(); // 进度条开始载入
 				var jsonMsg = {
 					"AccountId":this.formResetUserPwdModelData.workId,
-					"NewPwd":md5(this.formResetUserPwdModelData.pwd + Store.state.salt),
+					"NewPwd":md5(this.formResetUserPwdModelData.pwd + Store.state.salt)
 				};
 				var mvue = this;// 向内传vue实体
 				// 采用字符串方式发送
@@ -773,6 +832,16 @@
 						let res = response.data;
 						let isSuccess = res.code==="100";
 						//console.log(res.MSG,isSuccess);
+						if(mvue.tokenLost(res.code)){
+							mvue.$Notice.warning({
+								title: '登陆已过期',
+								desc: '请重新登陆'
+							});
+							Store.commit('offline'); // 设置登录状态
+							mvue.$Loading.error(); // 进度条载入失败
+							mvue.$router.push("/login"); // 跳转到主页面
+							return;
+						}
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '重设用户密码成功',
@@ -825,6 +894,16 @@
 					.then(function (response) {
 						let res = response.data;
 						let isSuccess = res.code==="100";
+						if(mvue.tokenLost(res.code)){
+							mvue.$Notice.warning({
+								title: '登陆已过期',
+								desc: '请重新登陆'
+							});
+							Store.commit('offline'); // 设置登录状态
+							mvue.$Loading.error(); // 进度条载入失败
+							mvue.$router.push("/login"); // 跳转到主页面
+							return;
+						}
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '移除员工账号成功',
@@ -876,6 +955,16 @@
 					.then(function (response) {
 						let res = response.data;
 						let isSuccess = res.code==="100";
+						if(mvue.tokenLost(res.code)){
+							mvue.$Notice.warning({
+								title: '登陆已过期',
+								desc: '请重新登陆'
+							});
+							Store.commit('offline'); // 设置登录状态
+							mvue.$Loading.error(); // 进度条载入失败
+							mvue.$router.push("/login"); // 跳转到主页面
+							return;
+						}
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '重设用户权限成功',
@@ -926,6 +1015,16 @@
 					.then(function (response) {
 						let res = response.data;
 						let isSuccess = res.code==="100";
+						if(mvue.tokenLost(res.code)){
+							mvue.$Notice.warning({
+								title: '登陆已过期',
+								desc: '请重新登陆'
+							});
+							Store.commit('offline'); // 设置登录状态
+							mvue.$Loading.error(); // 进度条载入失败
+							mvue.$router.push("/login"); // 跳转到主页面
+							return;
+						}
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '添加新收费站成功',
@@ -970,37 +1069,7 @@
 					'&&station='+ this.formSearchData.station;
 				console.log()
 
-				this.$router.push(url); // 返回首页
-				return;
-
-				this.$Loading.start(); // 进度条开始载入
-				var jsonMsg = {
-					"BeanType":this.formSearchData.beanType,
-					"CarId":this.formSearchData.carIdPartI+this.formSearchData.carId,
-					"Shift":this.formSearchData.shift,
-					"DateBegin":this.formSearchData.dateBegin,
-					"DateEnd":this.formSearchData.dateEnd,
-					"Station":this.formSearchData.station,
-					"Page":1
-				};
-				if(this.formSearchData.carId===""){
-					jsonMsg.CarId = ""; // 车牌号可以为空
-				}
-				var mvue = this;// 向内传vue实体
-				// 采用字符串方式发送
-				axios.post(Store.state.server+"/SearchCarBeanServlet", qs.stringify(jsonMsg),
-					{
-						headers: {
-							'Content-Type': 'application/x-www-form-urlencoded',
-							"Token":Store.state.token
-						}
-					})
-					.then(function (response) {
-						mvue.$Loading.finish(); // 进度条载入完毕
-					})
-					.catch(function (error) {
-						mvue.$Loading.error(); // 进度条载入失败
-					});
+				this.$router.push(url); // 跳到搜索页
 			},
 			setDateBegin(value,type){
 				this.$refs['formSearch'].validate((valid) => {});

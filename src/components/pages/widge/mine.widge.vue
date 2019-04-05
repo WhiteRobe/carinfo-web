@@ -33,16 +33,15 @@
 <template>
 	<div>
 		<Drawer :closable="false" width="360" v-model="canShow" placement="left" title="我的资料">
-			<p :style="pStyle"><Icon type="ios-aperture" />&nbsp;您的UID为：{{UID_S}}</p>
 			<div class="mine-drawer-profile-profile">
 				<div class="mineAvatarDiv">
-					<img class="mineAvatarImage" :src="imgDir+'/'+AVATAR"></img>
+					<img class="mineAvatarImage" :src="imgDir+'avatar.png'"></img>
 				</div>
 			</div>
 			<Divider />
 			<div class="mine-drawer-profile-profile">
-				<Row>
-					<Col span="2">&nbsp;<!--用于对齐--></Col>
+				<!--<Row>
+					<Col span="2">&nbsp;</Col>
 					<Col span="22">
 						<br/><br/>
 						<font face="微软雅黑" color="#808695">ID:</font>
@@ -53,28 +52,46 @@
 						<font face="微软雅黑">{{auth2String}}</font><br/><br/>
 					</Col>
 				</Row>
-				<Divider />
+				<Divider />-->
 				<Row>
 					<Col span="1">&nbsp;<!--用于对齐--></Col>
 					<Col span="22">
-						<Button type="success" long @click="editProfileAction">修 改 资 料</Button>
-						<br/><br/>
+						<Button type="primary" long @click="resetUserPwdModelShow = true">修 改 密 码</Button>
+						<br/>
 						<Button type="error" long @click="logout">退 出 登 录</Button>
-						<div v-if="AUTH>=10">
-							<br/>
-							<Divider>管理员控制台</Divider>
-							<Button type="primary" long @click="gotoConsoleAction">进 入 控 制 台</Button>
-						</div>
 					</Col>
 					<Col span="1">&nbsp;<!--用于对齐--></Col>
 				</Row>
 			</div>
 		</Drawer>
+
+		<!--重设用户密码-->
+		<Modal v-model="resetUserPwdModelShow" title="重设用户密码">
+			<Form ref="formResetUserPwd" :model="formResetUserPwdModelData" :rules="resetUserPwdRule">
+				<FormItem prop="oldPwd" label="输入新密码">
+					<Input type="password" v-model="formResetUserPwdModelData.oldPwd" style="width:auto" placeholder="请输入旧密码">
+						<Icon type="ios-key" slot="prepend"></Icon>
+					</Input>
+				</FormItem>
+				<FormItem prop="newPwd" label="设置新密码">
+					<Input type="password" v-model="formResetUserPwdModelData.newPwd" style="width:auto" placeholder="请输入新密码">
+						<Icon type="ios-key" slot="prepend"></Icon>
+					</Input>
+				</FormItem>
+			</Form>
+			<div slot="footer">
+				<Button type="primary" size="large" long  @click="resetUserPwdModelSubmit">提 交</Button>
+			</div>
+		</Modal>
 	</div>
 </template>
 <script type="text/javascript">
 	import {Store} from '../../../store.js';
 	import axios from 'axios';
+	import md5 from 'js-md5';
+	import jwt from 'jsonwebtoken';
+	import qs from 'qs'; // 处理asiox post传参的坑
+
 	export default{
 		name:"MineWidge",
 		inject:['gFrameWindow'],
@@ -88,93 +105,121 @@
                     display: 'block',
                     marginBottom: '16px'
                 },
-				UID_S:-1,
-				ID:'$ID',
-				EMAIL:"$EMAIL",
-				AVATAR:"defaultAVATAR.jpg",
-				AUTH:-1
-			}
-		},
-		computed:{
-			myUID:function(){
-                return Store.state.UID;
-            },
-			serverURL(){
-				return Store.state.server;
-			},
-			imgDir(){
-				return Store.state.imgDir;
-			},
-			auth2String(){
-				switch(this.AUTH){
-					case 0:
-						return '普通会员Lv.'+this.AUTH;
-					case 1:
-					case 2:
-					case 3:
-					case 4:
-						return '白银会员Lv.'+this.AUTH;
-					case 5:
-					case 6:
-					case 7:
-					case 8:
-						return '超级会员Lv.'+this.AUTH;
-					case 9:
-						return '管理员';
-					case 10:
-						return '超级管理员';
-					default:
-						return '未知用户';
+				resetUserPwdModelShow:false,
+				formResetUserPwdModelData:{
+					accountId:"",
+					oldPwd:"",
+					newPwd:""
+				},
+				resetUserPwdRule:{
+					oldPwd:[
+						{ required: true, message: '请输入旧密码', trigger: 'blur' },
+						{ pattern: /^[A-Za-z0-9]{6,16}$/, message: '密码长度为6-16位英文数字组合', trigger: 'blur' }
+					],
+					newPwd:[
+						{ required: true, message: '请输入新密码', trigger: 'blur' },
+						{ pattern: /^[A-Za-z0-9]{6,16}$/, message: '密码长度为6-16位英文数字组合', trigger: 'blur' }
+					]
 				}
 			}
 		},
-		methods:{
-			initData(){
-				var mvue = this;
-                axios.get(Store.state.server+"/ProfileManagerServlet",
-                    {
-                        params: { // get 模式手动赋值
-							"jsondata": {"UID":this.myUID}
-						}
-                    })
-                    .then(function (response) {
-                        let res = response.data;
-                        let isSuccess = res.FLAG;
-                        if(isSuccess){
-							mvue.canShow = true;
-							mvue.UID_S = res.UID;
-							mvue.ID = res.ID;
-							mvue.EMAIL = res.EMAIL;
-							mvue.AUTH = res.AUTH;
-							mvue.AVATAR = res.AVATAR;
-                        } else {
-							mvue.canShow = false;
-                            mvue.$Notice.error({
-                                title: '获取个人资料失败',
-                                desc: res.MSG
-                            });
-                        }
-                    })
-                    .catch(function (error) {
-						mvue.canShow = false;
-                        mvue.$Notice.error({
-                            title: '获取个人资料失败',
-                            desc: '连接超时：未从服务器获得数据'
-                        });
-                        console.log(error);
-                    });
+		computed:{
+			imgDir(){
+				return Store.state.imgDir;
 			},
+			token(){
+				return Store.state.token;
+			}
+		},
+		methods:{
 			logout(){
 				this.canShow = false;
 				this.gFrameWindow.logout();
 			},
-			editProfileAction(){
-				this.canShow = false;
-				this.$router.push("/editProfile"); // 跳转资料修改页
+			tokenLost(str){
+				let pattern = /^20[1-9]{1,1}$/;
+				if(pattern.test(str)){
+					return true;
+				}
+				return false;
 			},
-			gotoConsoleAction(){
-				this.canShow = false;
-				this.$router.push("/console"); // 跳转管理员控制台
+			resetUserPwdModelSubmit(){
+				var valipass = true;
+				this.$refs['formResetUserPwd'].validate((valid) => {
+                    if (!valid) {
+						this.$Notice.error({
+								title: '表单填写有误',
+								desc: '请检查您的输入!'
+							});
+                        valipass = false;
+                    } 
+                })
+				if(!valipass) return;
+
+				if(this.token==null){
+					mvue.$Notice.warning({
+						title: '登陆已过期',
+						desc: '请重新登陆'
+					});
+					Store.commit('offline'); // 设置登录状态
+					mvue.$Loading.error(); // 进度条载入失败
+					mvue.$router.push("/login"); // 跳转到主页面
+					return;
+				}
+
+				this.formResetUserPwdModelData.workId = jwt.decode(this.token, {complete: true}).payload.subject;
+
+				this.$Loading.start(); // 进度条开始载入
+				var jsonMsg = {
+					"AccountId":this.formResetUserPwdModelData.workId,
+					"OldPwd":md5(this.formResetUserPwdModelData.oldPwd + Store.state.salt),
+					"NewPwd":md5(this.formResetUserPwdModelData.newPwd + Store.state.salt)
+				};
+				var mvue = this;// 向内传vue实体
+				// 采用字符串方式发送
+				axios.post(Store.state.server+"/ResetPasswordServlet", qs.stringify(jsonMsg),
+					{
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							"Token":Store.state.token
+						}
+					})
+					.then(function (response) {
+						let res = response.data;
+						let isSuccess = res.code==="100";
+						//console.log(res.MSG,isSuccess);
+						if(mvue.tokenLost(res.code)){
+							mvue.$Notice.warning({
+								title: '登陆已过期',
+								desc: '请重新登陆'
+							});
+							Store.commit('offline'); // 设置登录状态
+							mvue.$Loading.error(); // 进度条载入失败
+							mvue.$router.push("/login"); // 跳转到主页面
+							return;
+						}
+						if(isSuccess){
+							mvue.$Notice.success({
+								title: '重设用户密码成功',
+								desc: '员工用户:'+jsonMsg.AccountId+' 的密码已重设。'
+							});
+							mvue.$Loading.finish(); // 进度条载入完毕
+						} else {
+							mvue.$Notice.error({
+								title: '重设用户密码失败',
+								desc: res.code==="508"?'您的权限不足':res.msg
+							});
+							mvue.$Loading.error(); // 进度条载入失败
+						}
+					})
+					.catch(function (error) {
+						mvue.$Loading.error(); // 进度条载入失败
+					});
+				// 清空数据
+				this.resetUserPwdModelShow = false;
+				this.formResetUserPwdModelData.workId="";
+				this.formResetUserPwdModelData.oldPwd="";
+				this.formResetUserPwdModelData.newPwd="";
 			}
 		}
 	}
