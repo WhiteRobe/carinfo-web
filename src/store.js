@@ -15,7 +15,7 @@ export const Store = new Vuex.Store({
       // 当前token
       token: null,
       // 当前用户权限
-      power:3 // 默认权限最低 0
+      power:0 // 默认权限最低 0
     },
     mutations: {
       online (state, payload) {

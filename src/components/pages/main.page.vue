@@ -66,11 +66,12 @@
 					</Col>
 					<Col span="3">&nbsp;<!--留白--></Col>
 					<Col span="6">
-						<Button type="error" size="large" long icon="md-car" @click="tryToShowBlackCarModel">录入黑名单车辆</Button>
+						<Button type="warning" size="large" long icon="md-car" @click="tryToShowBlackCarModel">录入黑名单车辆</Button>
 					</Col>
 					<Col span="3">&nbsp;<!--留白--></Col>
 					<Col span="6">
-						<!--其它按钮-->
+						<!--随便放个什么按钮...-->
+						<Button type="error" size="large" long icon="md-log-out" @click="gFrameWindow.logout()">退 出 登 陆</Button>
 					</Col>
 				</Row>
 			</div>
@@ -88,7 +89,7 @@
 					</Col>
 					<Col span="3">&nbsp;<!--留白--></Col>
 					<Col span="6">
-						<Button type="warning" size="large" long icon="md-home" @click="signInNewTollModelShow = true">录入新收费站</Button>
+						<Button type="info" size="large" long icon="md-home" @click="signInNewTollModelShow = true">录入新收费站</Button>
 					</Col>
 				</Row>
 			</div>
@@ -102,11 +103,11 @@
 					</Col>
 					<Col span="3">&nbsp;<!--留白--></Col>
 					<Col span="6">
-						<Button type="success" size="large" long icon="md-create" @click="editUserPowerModelShow = true">调整用户权限</Button>
+						<Button type="warning" size="large" long icon="md-create" @click="editUserPowerModelShow = true">调整用户权限</Button>
 					</Col>
 					<Col span="3">&nbsp;<!--留白--></Col>
 					<Col span="6">
-						<Button type="warning" size="large" long icon="md-remove-circle" @click="removeUserModelShow = true">移除员工账号</Button>
+						<Button type="error" size="large" long icon="md-remove-circle" @click="removeUserModelShow = true">移除员工账号</Button>
 					</Col>
 				</Row>
 			</div>
@@ -304,6 +305,7 @@
 	import qs from 'qs'; // 处理asiox post传参的坑
   	export default{
 		name:"MainPage",
+		inject:['gFrameWindow'],
 		data:function(){
 			return {
 				signInNewCarTypeModelShow:false,
@@ -1047,7 +1049,7 @@
 				this.formNewTollData.tollName="";
 			},
 			searchSubmit(){
-				console.log(this.formSearchData.dateBegin,this.formSearchData.dateEnd);
+				//console.log(this.formSearchData.dateBegin,this.formSearchData.dateEnd);
 				var valipass = true;
 				this.$refs['formSearch'].validate((valid) => {
                     if (!valid) {

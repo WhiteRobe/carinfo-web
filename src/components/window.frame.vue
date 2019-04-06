@@ -86,7 +86,7 @@
             handleMenuItemSelect(menuName){
                 switch(menuName){
                     case 'MINE_WIDGE':
-                        this.$refs.mineWidge.canShow = true;
+                        this.$refs.mineWidge.initData();
                         break;
                     case 'LOGOUT':
                         this.logout();

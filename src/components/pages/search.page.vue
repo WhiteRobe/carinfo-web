@@ -13,7 +13,7 @@
 			<Col span="2">&nbsp;</Col>
 			<Col span="20">
 				<Breadcrumb>
-					<BreadcrumbItem to="/main"><Icon type="md-home"></Icon>返回首页</BreadcrumbItem>
+					<BreadcrumbItem to="/main"><Icon type="md-home"></Icon>&nbsp;返回首页</BreadcrumbItem>
 					<BreadcrumbItem>检索结果显示页面</BreadcrumbItem>
 				</Breadcrumb>
 				<Divider orientation="left">检索结果</Divider>
@@ -23,7 +23,7 @@
 						<Icon type="ios-bulb-outline" slot="icon"></Icon>
 						<template slot="desc">请检查您的搜索关键字及筛选方案</template>
 					</Alert>
-					<Button size="default" long type="primary"><Icon type="ios-arrow-back" />返回首页</Button>
+					<Button size="large" long type="primary" @click="backToMainPageEvent"><Icon type="md-arrow-round-back" />&nbsp;返 回 首 页</Button>
 				</div>
 				<div v-else>
 					<Card :bordered="false" dis-hover>
@@ -35,8 +35,10 @@
 							<Col span="3"> <b>班次</b></Col>
 							<Col span="3"> <b>班长</b></Col>
 							<Col span="3"> <b>入口站</b></Col>
-							<Col span="3"> <b>操作</b></Col>
-							<Col span="2"> &nbsp;</Col>
+							<Col span="4"> <b>操作</b></Col>
+							<Col span="1"> 
+								<Tooltip content="刷新页面数据"><Icon type="md-refresh-circle" color="#19be6b" @click="refreshData" size="24"/></Tooltip>
+							</Col>
 						</Row>
 						<div v-for="(item,index) in searchResult" :key="index">
 							<search-widge :info="item" :beanType="formSearchData.beanType"></search-widge>
@@ -113,6 +115,9 @@
 				this.formSearchData.page = page_index; // 服务器的页码从0记起，前端从1记起
 				this.getPageData();
 			},
+			refreshData(){
+				this.getPageData();
+			},
 			getPageData(){
 				// 获取某一页的数据
 				this.$Loading.start();
@@ -151,7 +156,7 @@
 							return;
 						}
 						if(isSuccess){
-							console.log(res);
+							//console.log(res);
 							// 最后一行为一个数字，即总搜索命中数
 							mvue.searchResult.splice(0,mvue.searchResult.length);// 清空显示内容
 							for(var i=0;i<res.data.length-1;i++){

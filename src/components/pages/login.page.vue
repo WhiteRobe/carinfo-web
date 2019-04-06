@@ -62,6 +62,12 @@
 		name:"LoginPage",
 		data:function(){
 			const asyncValiCode = (rule, value, callback) => {
+				// if (!value) {
+                //     return callback(new Error('请输入4位验证码'));
+                // } else if(!/^[0-9a-zA-Z]{4,4}$/.test(value)){
+				// 	return callback(new Error('验证码长度为4位中英文组合'));
+				// }
+
 				// 异步验证验证码
 				axios.post(Store.state.server+"/CheckValiCode", qs.stringify({"Vali":value}),
 				{
@@ -74,6 +80,7 @@
 					let isSuccess = res.code==="100";
 					// console.log(res,isSuccess);
 					if(isSuccess){
+						console.log(res.data[0].Result==="true");
 						res.data[0].Result==="true"?callback():callback(new Error("验证码错误"));
 					} else {
 						console.log("异步验证验证码失败:", res.msg);
@@ -120,18 +127,19 @@
 				this.catchaSeed = Math.random();
 			},
 			submit:function(){
-				var valipass = true;
+				var mvue = this;
 				this.$refs['loginform'].validate((valid) => {
                     if (!valid) {
 						this.$Notice.error({
 								title: '表单填写有误',
 								desc: '请检查您的输入!'
 							});
-                        valipass = false;
-                    } 
+                    } else {
+						mvue.tryLogin();
+					}
                 })
-				if(!valipass) return;
-
+			},
+			tryLogin(){
 				this.$Loading.start(); // 进度条开始载入
 				var jsonMsg = {
 					"WorkId":this.formData.id,
