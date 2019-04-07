@@ -45,13 +45,25 @@
 							</Row>
 						</FormItem>
 						<Divider>其它筛选项</Divider>
-						<FormItem prop="shift" label="按班次筛选">
-							<Select v-model="formSearchData.shift" style="width: auto" sise="large" placeholder="请选择班次，可缺省">
-								<Option value="早班">早班</Option>
-								<Option value="中班">中班</Option>
-								<Option value="晚班">晚班</Option>
-							</Select>
-						</FormItem>
+						<Row>
+							<Col span="8">
+								<FormItem prop="shift" label="按班次筛选">
+									<Select v-model="formSearchData.shift" style="width: auto" sise="large" placeholder="请选择班次，可缺省">
+										<Option value="早班">早班</Option>
+										<Option value="中班">中班</Option>
+										<Option value="晚班">晚班</Option>
+									</Select>
+								</FormItem>
+							</Col>
+							<Col span="8">
+								<FormItem prop="station" label="按入口站筛选">
+									<Select v-model="formSearchData.station" style="width: auto" sise="large" placeholder="请选择入口站，可缺省">
+										<Option v-for="item in tollList" :value="item" :key="item">{{ item }}</Option>
+									</Select>
+								</FormItem>
+							</Col>
+							<Col span="8">&nbsp;</Col>
+						</Row>
 					</Form>
 				</Card>
 			</div>
@@ -366,6 +378,7 @@
 				},
 
 				carTypeList:[],
+				tollList:[],
 
 				signInewCarTypeRule:{
 					newCarType:[
@@ -464,6 +477,48 @@
 				dutyList:['其它','员工','班长','站长'],
 				powerList:['员工', '管理员', '超级管理员'] // 权限应依次为1 2 3...
 			}
+		},
+		created:function(){
+			var mvue = this;
+			axios.get(Store.state.server+"/GetTollList",
+				{   
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						"Token":Store.state.token
+					}
+				})
+				.then(function (response) {
+					let res = response.data;
+					let isSuccess = res.code=="100";
+					//console.log(res,isSuccess);
+					if(mvue.tokenLost(res.code)){
+						mvue.$Notice.warning({
+							title: '登陆已过期',
+							desc: '请重新登陆'
+						});
+						Store.commit('offline'); // 设置登录状态
+						mvue.$Loading.error(); // 进度条载入失败
+						mvue.$router.push("/login"); // 跳转到主页面
+						return;
+					}
+					if(isSuccess){
+						let dataList = res.data;
+						for(var i=0;i<dataList.length;i++){
+							mvue.tollList.push(dataList[i].TollName);
+						}
+					} else {
+						mvue.$Notice.error({
+							title: '拉取收费站列表失败',
+							desc: '服务器正忙，请稍刷新页面尝试'
+						});
+					}
+				})
+				.catch(function (error) {
+					mvue.$Notice.error({
+						title: '拉取收费站列表失败',
+						desc: '您的网络连接似乎不稳定，请稍刷新页面'
+					});
+				});
 		},
 		computed:{
 			isAdmin(){
