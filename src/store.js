@@ -18,6 +18,9 @@ export const Store = new Vuex.Store({
       power:0 // 默认权限最低 0
     },
     mutations: {
+      setProtocol(state, value){
+        state.protocol=value;
+      },
       online (state, payload) {
         state.token=payload.Token;
         state.loginState=true;

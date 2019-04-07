@@ -12,6 +12,7 @@ Vue.use(iView);
 
 import {AppRouter} from "./router.js"; // 应用路由
 import {Store} from "./store.js"; // 应用全局状态
+import axios from 'axios';
 
 import WindowFrame from "./components/window.frame.vue";
 //-------------------//
@@ -23,6 +24,13 @@ var app = new Vue({
   },
   components:{
     "window-frame":WindowFrame
+  },
+  created: function(){
+    axios.get(Store.state.server+'/GetProtocolServlet')
+      .then( response => {
+        Store.commit('setProtocol', response.data);
+      })
+      .catch(error => {});
   },
   router:AppRouter
 });

@@ -80,10 +80,10 @@
 					let isSuccess = res.code==="100";
 					// console.log(res,isSuccess);
 					if(isSuccess){
-						console.log(res.data[0].Result==="true");
+						//console.log(res.data[0].Result==="true");
 						res.data[0].Result==="true"?callback():callback(new Error("验证码错误"));
 					} else {
-						console.log("异步验证验证码失败:", res.msg);
+						//console.log("异步验证验证码失败:", res.msg);
 						callback(new Error("异步验证验证码失败"));
 					}
 				})

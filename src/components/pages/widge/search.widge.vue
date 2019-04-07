@@ -29,6 +29,11 @@
 	-webkit-border-radius: 50%;
 	transition: linear 0.25s;
 }
+a:link{color:#808695;}
+a:visited{color:#808695;}
+a:hover{color:#2db7f5;}
+a:active{color:#2db7f5;}
+
 </style>
 <template>
 	<div>
@@ -42,12 +47,24 @@
 				<Col span="3"> {{info.EntryToll}}</Col>
 				<Col span="5"> 
 					<Button type="primary" size="default" shape="circle" long @click="tryToBuildDoc(info.UID, beanType)" v-if="buildDocStatus==1" icon="md-document">生 成 文 档</Button>
-					<Button type="success" size="default" shape="circle" long @click="download" v-else-if="buildDocStatus==2" icon="md-download">下 载 文 档</Button>
+					<div v-else-if="buildDocStatus==2">
+						<Row>
+							<Button type="success" size="default" shape="circle" long @click="download"  icon="md-download" >下 载 文 档</Button><br/>
+						</Row>
+						<Row>
+							<Col span="6">&nbsp;</Col>
+							<Col span="18"><a :href="docUrl+downloadFileUrl" style="font-size:2px;" download>点此进行手动下载</a></Col>
+						</Row>
+					</div>
 					<Button type="warning" size="default" shape="circle" long @click="tryToBuildDoc(info.UID, beanType)" v-else-if="buildDocStatus==3" icon="md-refresh-circl">重新尝试生成文档</Button>
 					<Button type="error" size="default" shape="circle" long @click="reLogin" v-else icon="md-close-circle">服务器错误请重新登陆</Button>
 				</Col>
 			</Row>
 		</Card>
+		<!--<Row v-if="buildDocStatus==2">
+			<Col span="20">&nbsp;</Col>
+			<Col span="4"><a ref="download_a" :href="docUrl+downloadFileUrl" style="font-size:5px;" download>点此进行手动下载</a></Col>
+		</Row>-->
 	</div>
 </template>
 <script type="text/javascript">
