@@ -44,7 +44,7 @@
 					<Col span="2">&nbsp;</Col>
 					<Col span="22">
 						<br/><br/>
-						<font face="微软雅黑" color="#808695">工号/登陆账号:</font>
+						<font face="微软雅黑" color="#808695">工号/登录账号:</font>
 						<font face="微软雅黑">{{userInfo.workId}}</font><br/><br/>
 						<font face="微软雅黑" color="#808695">姓名:</font>
 						<font face="微软雅黑">{{userInfo.workerName}}</font><br/><br/>
@@ -62,7 +62,7 @@
 				<Row>
 					<Col span="1">&nbsp;<!--用于对齐--></Col>
 					<Col span="22">
-						<Button type="default" long @click="showEditWorkerNameNotice">修 改 姓 名</Button>
+						<Button type="default" long @click="resetUserNameModelShow = true">修 改 姓 名</Button>
 						<br/><br/>
 						<Button type="primary" long @click="resetUserPwdModelShow = true">修 改 密 码</Button>
 						<br/><br/>
@@ -89,6 +89,19 @@
 			</Form>
 			<div slot="footer">
 				<Button type="primary" size="large" long  @click="resetUserPwdModelSubmit">提 交</Button>
+			</div>
+		</Modal>
+		<!--重设用户姓名-->
+		<Modal v-model="resetUserNameModelShow" title="重设用户姓名">
+			<Form ref="formResetUserPwd" :model="formResetUserNameModelData" :rules="resetUserNameRule">
+				<FormItem prop="userName" label="设置新名字">
+					<Input type="text" v-model="formResetUserNameModelData.userName" style="width:auto" placeholder="设置新名字" @keydown.enter.native="resetUserNameModelSubmit">
+						<Icon type="ios-person" slot="prepend" ></Icon>
+					</Input>
+				</FormItem>
+			</Form>
+			<div slot="footer">
+				<Button type="primary" size="large" long  @click="resetUserNameModelSubmit">提 交</Button>
 			</div>
 		</Modal>
 	</div>
@@ -121,11 +134,17 @@
 
 
 				resetUserPwdModelShow:false,
+				resetUserNameModelShow:false,
+
 				formResetUserPwdModelData:{
 					accountId:"",
 					oldPwd:"",
 					newPwd:""
 				},
+				formResetUserNameModelData:{
+					userName:""
+				},
+
 				resetUserPwdRule:{
 					oldPwd:[
 						{ required: true, message: '请输入旧密码', trigger: 'blur' },
@@ -134,6 +153,12 @@
 					newPwd:[
 						{ required: true, message: '请输入新密码', trigger: 'blur' },
 						{ pattern: /^[A-Za-z0-9]{6,16}$/, message: '密码长度为6-16位英文数字组合', trigger: 'blur' }
+					]
+				},
+				resetUserNameRule:{
+					userName:[
+						{ required: true, message: '请输入新姓名', trigger: 'blur' },
+						{ type: 'string', max: 5, message: '长度在5字以内', trigger: 'blur' }
 					]
 				}
 			}
@@ -155,18 +180,15 @@
 					case 3:
 						return '超级管理员账号';
 					default:
-						return '其它类型账号(尚未登陆)';
+						return '其它类型账号(尚未登录)';
 				}
 			}
 		},
 		methods:{
-			showEditWorkerNameNotice(){
-				this.$Message.info('请联系管理员进行操作');
-			},
 			returnToLogin(){
 				this.$Notice.warning({
-						title: '登陆已过期',
-						desc: '请重新登陆'
+						title: '登录已过期',
+						desc: '请重新登录'
 					});
 				Store.commit('offline'); // 设置登录状态
 				this.$Loading.error(); // 进度条载入失败
@@ -207,6 +229,7 @@
 							mvue.userInfo.workId = res.data[0].WorkId;
 							mvue.userInfo.workerName = res.data[0].WorkerName;
 							mvue.userInfo.duty = res.data[0].Duty;
+							mvue.$Loading.finish();
 						} else {
 							mvue.canShow = false;
 							mvue.$Notice.error({
@@ -283,7 +306,7 @@
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '重设用户密码成功',
-								desc: '员工用户:'+jsonMsg.AccountId+' 的密码已重设，请重新登陆。'
+								desc: '员工用户:'+jsonMsg.AccountId+' 的密码已重设，请重新登录。'
 							});
 							mvue.$Loading.finish(); // 进度条载入完毕
 							Store.commit('offline');
@@ -304,6 +327,77 @@
 				this.formResetUserPwdModelData.workId="";
 				this.formResetUserPwdModelData.oldPwd="";
 				this.formResetUserPwdModelData.newPwd="";
+			},
+			resetUserNameModelSubmit(){
+				var valipass = true;
+				this.$refs['formResetUserPwd'].validate((valid) => {
+                    if (!valid) {
+						this.$Notice.error({
+								title: '表单填写有误',
+								desc: '请检查您的输入!'
+							});
+                        valipass = false;
+                    } 
+                })
+				if(!valipass) return;
+
+				if(this.token==null){
+					return this.returnToLogin();
+				}
+
+				var workId = jwt.decode(this.token, {complete: true}).payload.sub; // 修改账号时用的其实时 系统账号而非工号
+				if(!/^[0-9]{9,9}$/.test(workId)){
+					this.$Notice.info({
+						title: '特殊账号无法修改姓名',
+						desc: '您是特殊账号而非员工账号，无法修改姓名。'
+					});
+					this.resetUserNameModelShow = false;
+					this.formResetUserNameModelData.userName="";
+					return;
+				}
+
+				this.$Loading.start(); // 进度条开始载入
+				var jsonMsg = {
+					"WorkId":workId,
+					"WorkerName":this.formResetUserNameModelData.userName,
+				};
+				var mvue = this;// 向内传vue实体
+				// 采用字符串方式发送
+				axios.post(Store.state.server+"/ResetWorkerNameServlet", qs.stringify(jsonMsg),
+					{
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							"Token":Store.state.token
+						}
+					})
+					.then(function (response) {
+						let res = response.data;
+						let isSuccess = res.code==="100";
+						//console.log(res.MSG,isSuccess);
+						if(mvue.tokenLost(res.code)){
+							return mvue.returnToLogin();
+						}
+						if(isSuccess){
+							mvue.$Notice.success({
+								title: '重设用户姓名成功',
+								desc: '员工用户:'+jsonMsg.WorkId+"("+jsonMsg.WorkerName+")"+' 的姓名已重设。'
+							});
+							mvue.$Loading.finish(); // 进度条载入完毕
+							mvue.canShow = false; // 侧边栏收起
+						} else {
+							mvue.$Notice.error({
+								title: '重设用户姓名失败',
+								desc: res.code==="508"?'您的权限不足':res.msg
+							});
+							mvue.$Loading.error(); // 进度条载入失败
+						}
+					})
+					.catch(function (error) {
+						mvue.$Loading.error(); // 进度条载入失败
+					});
+				// 清空数据
+				this.resetUserNameModelShow = false;
+				this.formResetUserNameModelData.userName="";
 			}
 		}
 	}

@@ -57,7 +57,7 @@ a:active{color:#2db7f5;}
 						</Row>
 					</div>
 					<Button type="warning" size="default" shape="circle" long @click="tryToBuildDoc(info.UID, beanType)" v-else-if="buildDocStatus==3" icon="md-refresh-circl">重新尝试生成文档</Button>
-					<Button type="error" size="default" shape="circle" long @click="reLogin" v-else icon="md-close-circle">服务器错误请重新登陆</Button>
+					<Button type="error" size="default" shape="circle" long @click="reLogin" v-else icon="md-close-circle">服务器错误请重新登录</Button>
 				</Col>
 			</Row>
 		</Card>
@@ -84,7 +84,7 @@ a:active{color:#2db7f5;}
 		data:function(){
 			return {
 				downloadFileUrl:"", // 文件的下载地址
-				buildDocStatus:1 // 1:尚未尝试建立 2:已建立成功 3:建立失败可重试 4:服务器问题请，重新登陆
+				buildDocStatus:1 // 1:尚未尝试建立 2:已建立成功 3:建立失败可重试 4:服务器问题请，重新登录
 			}
 		},
 		computed: {
@@ -121,8 +121,8 @@ a:active{color:#2db7f5;}
 						//console.log(res.MSG,isSuccess);
 						if(mvue.tokenLost(res.code)){
 							mvue.$Notice.warning({
-								title: '登陆已过期',
-								desc: '请重新登陆'
+								title: '登录已过期',
+								desc: '请重新登录'
 							});
 							Store.commit('offline'); // 设置登录状态
 							mvue.$Loading.error(); // 进度条载入失败

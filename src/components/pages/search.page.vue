@@ -147,8 +147,8 @@
 						let isSuccess = res.code==="100";
 						if(mvue.tokenLost(res.code)){
 							mvue.$Notice.warning({
-								title: '登陆已过期',
-								desc: '请重新登陆'
+								title: '登录已过期',
+								desc: '请重新登录'
 							});
 							Store.commit('offline'); // 设置登录状态
 							mvue.$Loading.error(); // 进度条载入失败

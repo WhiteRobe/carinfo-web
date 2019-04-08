@@ -11,7 +11,7 @@
 					<p slot="title">车辆信息检索</p>
 					<Form ref="formSearch" :model="formSearchData" :rules="formSearchRule">
 						<FormItem prop="carId">
-							<Input search enter-button placeholder="请输入除省份简称外的车牌号,如A12345(若缺省将搜索所有该类型车辆的数据)"
+							<Input search enter-button placeholder="请输入除省份简称外的车牌号，如A12345 (若缺省将搜索所有该类型车辆的数据)"
 							 @on-search="searchSubmit"  @on-enter="searchSubmit" v-model="formSearchData.carId">
 								<Select v-model="formSearchData.carIdPartI" slot="prepend" style="width:auto" placeholder="省份简称">
 									<Option v-for="item in provinceList" :value="item" :key="item">{{ item }}</Option>
@@ -83,7 +83,7 @@
 					<Col span="3">&nbsp;<!--留白--></Col>
 					<Col span="6">
 						<!--随便放个什么按钮...-->
-						<Button type="error" size="large" long icon="md-log-out" @click="gFrameWindow.logout()">退 出 登 陆</Button>
+						<Button type="error" size="large" long icon="md-log-out" @click="gFrameWindow.logout()">退 出 登 录</Button>
 					</Col>
 				</Row>
 			</div>
@@ -475,7 +475,7 @@
 								'滇','藏','陕','甘','青','宁','新','台','港','澳'],
 				alphabetList:['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'],
 				dutyList:['其它','员工','班长','站长'],
-				powerList:['员工', '管理员', '超级管理员'] // 权限应依次为1 2 3...
+				powerList:['员工', '管理员'] // 权限应依次为1 2 3... //'超级管理员'权限无法赋予
 			}
 		},
 		created:function(){
@@ -493,8 +493,8 @@
 					//console.log(res,isSuccess);
 					if(mvue.tokenLost(res.code)){
 						mvue.$Notice.warning({
-							title: '登陆已过期',
-							desc: '请重新登陆'
+							title: '登录已过期',
+							desc: '请重新登录'
 						});
 						Store.commit('offline'); // 设置登录状态
 						mvue.$Loading.error(); // 进度条载入失败
@@ -568,8 +568,8 @@
 						//console.log(res.MSG,isSuccess);
 						if(mvue.tokenLost(res.code)){
 							mvue.$Notice.warning({
-								title: '登陆已过期',
-								desc: '请重新登陆'
+								title: '登录已过期',
+								desc: '请重新登录'
 							});
 							Store.commit('offline'); // 设置登录状态
 							mvue.$Loading.error(); // 进度条载入失败
@@ -579,7 +579,8 @@
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '登记新车型成功',
-								desc: '新车型:'+jsonMsg.CarType+'已录入!'
+								desc: '新车型:'+jsonMsg.CarType+'已录入!',
+								duration: 8
 							});
 							mvue.$Loading.finish(); // 进度条载入完毕
 						} else {
@@ -634,8 +635,8 @@
 						//console.log(res.MSG,isSuccess);
 						if(mvue.tokenLost(res.code)){
 							mvue.$Notice.warning({
-								title: '登陆已过期',
-								desc: '请重新登陆'
+								title: '登录已过期',
+								desc: '请重新登录'
 							});
 							Store.commit('offline'); // 设置登录状态
 							mvue.$Loading.error(); // 进度条载入失败
@@ -645,7 +646,8 @@
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '登记新黑名单车辆成功',
-								desc: '新黑名单车辆:'+jsonMsg.CarId+'已录入!'
+								desc: '新黑名单车辆:'+jsonMsg.CarId+'已录入!',
+								duration: 8
 							});
 							mvue.$Loading.finish(); // 进度条载入完毕
 						} else {
@@ -685,8 +687,8 @@
                         //console.log(res,isSuccess);
 						if(mvue.tokenLost(res.code)){
 							mvue.$Notice.warning({
-								title: '登陆已过期',
-								desc: '请重新登陆'
+								title: '登录已过期',
+								desc: '请重新登录'
 							});
 							Store.commit('offline'); // 设置登录状态
 							mvue.$Loading.error(); // 进度条载入失败
@@ -748,8 +750,8 @@
 						//console.log(res.MSG,isSuccess);
 						if(mvue.tokenLost(res.code)){
 							mvue.$Notice.warning({
-								title: '登陆已过期',
-								desc: '请重新登陆'
+								title: '登录已过期',
+								desc: '请重新登录'
 							});
 							Store.commit('offline'); // 设置登录状态
 							mvue.$Loading.error(); // 进度条载入失败
@@ -827,8 +829,8 @@
 						//console.log(res.MSG,isSuccess);
 						if(mvue.tokenLost(res.code)){
 							mvue.$Notice.warning({
-								title: '登陆已过期',
-								desc: '请重新登陆'
+								title: '登录已过期',
+								desc: '请重新登录'
 							});
 							Store.commit('offline'); // 设置登录状态
 							mvue.$Loading.error(); // 进度条载入失败
@@ -838,7 +840,8 @@
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '注册新员工用户成功',
-								desc: '新员工用户:'+jsonMsg.WorkerName+'已录入\n(默认权限为一般用户,默认密码为工号后六位)'
+								desc: '新员工用户:'+jsonMsg.WorkerName+' 已录入\n(默认权限为一般用户,默认密码为工号后六位)',
+								duration: 0
 							});
 							mvue.$Loading.finish(); // 进度条载入完毕
 						} else {
@@ -891,8 +894,8 @@
 						//console.log(res.MSG,isSuccess);
 						if(mvue.tokenLost(res.code)){
 							mvue.$Notice.warning({
-								title: '登陆已过期',
-								desc: '请重新登陆'
+								title: '登录已过期',
+								desc: '请重新登录'
 							});
 							Store.commit('offline'); // 设置登录状态
 							mvue.$Loading.error(); // 进度条载入失败
@@ -953,8 +956,8 @@
 						let isSuccess = res.code==="100";
 						if(mvue.tokenLost(res.code)){
 							mvue.$Notice.warning({
-								title: '登陆已过期',
-								desc: '请重新登陆'
+								title: '登录已过期',
+								desc: '请重新登录'
 							});
 							Store.commit('offline'); // 设置登录状态
 							mvue.$Loading.error(); // 进度条载入失败
@@ -1014,8 +1017,8 @@
 						let isSuccess = res.code==="100";
 						if(mvue.tokenLost(res.code)){
 							mvue.$Notice.warning({
-								title: '登陆已过期',
-								desc: '请重新登陆'
+								title: '登录已过期',
+								desc: '请重新登录'
 							});
 							Store.commit('offline'); // 设置登录状态
 							mvue.$Loading.error(); // 进度条载入失败
@@ -1025,7 +1028,8 @@
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '重设用户权限成功',
-								desc: '员工用户:(工号)'+jsonMsg.WorkId+'的账号已注销！'
+								desc: '员工用户:(工号)'+jsonMsg.WorkId+'的账号已注销！',
+								duration: 0
 							});
 							mvue.$Loading.finish(); // 进度条载入完毕
 						} else {
@@ -1074,8 +1078,8 @@
 						let isSuccess = res.code==="100";
 						if(mvue.tokenLost(res.code)){
 							mvue.$Notice.warning({
-								title: '登陆已过期',
-								desc: '请重新登陆'
+								title: '登录已过期',
+								desc: '请重新登录'
 							});
 							Store.commit('offline'); // 设置登录状态
 							mvue.$Loading.error(); // 进度条载入失败
@@ -1085,7 +1089,8 @@
 						if(isSuccess){
 							mvue.$Notice.success({
 								title: '添加新收费站成功',
-								desc: '收费站:'+jsonMsg.TollName+' 已添加！'
+								desc: '收费站:'+jsonMsg.TollName+' 已添加！请刷新页面。',
+								duration: 0
 							});
 							mvue.$Loading.finish(); // 进度条载入完毕
 						} else {
