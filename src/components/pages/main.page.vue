@@ -389,7 +389,7 @@
 				signInBlackCarRule:{
 					newCarId:[
 						{ required: true, message: '请输入车牌号', trigger: 'blur' },
-						{ pattern: /^[0-9A-Z]{5,5}$/, message: '车牌号不合法', trigger: 'blur' }
+						{ pattern: /^[0-9A-Z]{5,6}$/, message: '车牌号不合法', trigger: 'blur' }
 					],
 					newCarType:[
 						{ required: true, message: '请选择其车型', trigger: 'blur' }
@@ -402,7 +402,7 @@
 				checkBlackCarRule:{
 					carId:[
 						{ required: true, message: '请输入车牌号', trigger: 'blur' },
-						{ pattern: /^[0-9A-Z]{5,5}$/, message: '车牌号不合法', trigger: 'blur' }
+						{ pattern: /^[0-9A-Z]{5,6}$/, message: '车牌号不合法', trigger: 'blur' }
 					]
 				},
 				signInNewUserRule:{
@@ -454,7 +454,7 @@
 						{ required: true, message: '请选择其车型', trigger: 'blur' }
 					],
 					carId:[
-						{ pattern: /^[A-Z]{1,1}[0-9A-Z]{5,5}$|\s+/, message: '车牌号不合法,输入车牌后六位或防空;正确格式如：A12345', trigger: 'blur' }
+						{ pattern: /^[A-Z]{1,1}[0-9A-Z]{5,6}$|\s+/, message: '车牌号不合法，请输入车牌除省份简称外的部分或放空；正确格式如：A12345', trigger: 'blur' }
 					],
 					// shift:{
 
