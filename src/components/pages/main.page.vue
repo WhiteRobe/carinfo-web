@@ -57,9 +57,13 @@
 							</Col>
 							<Col span="8">
 								<FormItem prop="station" label="按入口站筛选">
-									<Select v-model="formSearchData.station" style="width: auto" sise="large" placeholder="请选择入口站，可缺省">
+									<!--<Select v-model="formSearchData.station" style="width: auto" sise="large" placeholder="请选择入口站，可缺省">
 										<Option v-for="item in tollList" :value="item" :key="item">{{ item }}</Option>
-									</Select>
+									</Select>-->
+									<!--按要求修改成手输入口站-->
+									<Input type="text" v-model="formSearchData.station" style="width: auto" placeholder="请输入入口站，可缺省">
+										<Icon type="ios-home" slot="prepend"></Icon>
+									</Input>
 								</FormItem>
 							</Col>
 							<Col span="8">&nbsp;</Col>
@@ -464,10 +468,10 @@
 					],
 					dateEnd:[
 						{ required: true, message: '请选择结束日期', trigger: 'blur' }
+					],
+					station:[
+						{ type: 'string', max: 20, message: '长度在20字以内', trigger: 'blur' }
 					]
-					// station:{
-
-					// }
 				},
 
 				provinceList:['京','津','冀','晋','蒙','辽','吉','黑','沪','苏','浙','皖',
