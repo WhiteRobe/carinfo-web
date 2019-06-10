@@ -61,7 +61,7 @@
 										<Option v-for="item in tollList" :value="item" :key="item">{{ item }}</Option>
 									</Select>-->
 									<!--按要求修改成手输入口站-->
-									<Input type="text" v-model="formSearchData.station" style="width: auto" placeholder="请输入入口站，可缺省">
+									<Input type="text" v-model="formSearchData.station" style="width: auto" placeholder="如:咸阳，可缺省">
 										<Icon type="ios-home" slot="prepend"></Icon>
 									</Input>
 								</FormItem>
@@ -483,6 +483,7 @@
 			}
 		},
 		created:function(){
+			console.log('magic key 1355 :)');
 			var mvue = this;
 			axios.get(Store.state.server+"/GetTollList",
 				{   
@@ -1125,6 +1126,8 @@
                     } 
                 });
 				if(!valipass) return;
+				let stationRealValue = this.formSearchData.station.replace(/收费站/g, "") // 按甲方要求添加：入口站直接填入'咸阳'而自动补上'收费站'
+				stationRealValue = (stationRealValue === '' ? stationRealValue : stationRealValue + '收费站' );
 				let url='/search?'+
 					'beanType='+ this.formSearchData.beanType +
 					'&&carIdPartI='+ this.formSearchData.carIdPartI +
@@ -1132,8 +1135,8 @@
 					'&&shift='+ this.formSearchData.shift +
 					'&&dateBegin='+ this.formSearchData.dateBegin +
 					'&&dateEnd='+ this.formSearchData.dateEnd +
-					'&&station='+ this.formSearchData.station;
-				console.log()
+					'&&station='+ stationRealValue;
+				//console.log(url);
 
 				this.$router.push(url); // 跳到搜索页
 			},
