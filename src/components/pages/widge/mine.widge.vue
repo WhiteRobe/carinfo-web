@@ -62,6 +62,10 @@
 				<Row>
 					<Col span="1">&nbsp;<!--用于对齐--></Col>
 					<Col span="22">
+						<template v-if="myPowerInt>=2">
+							<Button type="info" long @click="showAllWorkers" >查 询 用 户</Button><!--按要求添加该功能-->
+							<br/><br/>
+						</template>
 						<Button type="default" long @click="resetUserNameModelShow = true">修 改 姓 名</Button>
 						<br/><br/>
 						<Button type="primary" long @click="resetUserPwdModelShow = true">修 改 密 码</Button>
@@ -164,6 +168,9 @@
 			}
 		},
 		computed:{
+			myPowerInt(){
+				return Store.state.power;
+			},
 			imgDir(){
 				return Store.state.imgDir;
 			},
@@ -185,6 +192,10 @@
 			}
 		},
 		methods:{
+			showAllWorkers(){
+				this.canShow = false;
+				this.$router.push("/showAllWorkers"); // 跳转到现实所有用户的页面
+			},
 			returnToLogin(){
 				this.$Notice.warning({
 						title: '登录已过期',

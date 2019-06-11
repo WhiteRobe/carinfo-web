@@ -8,6 +8,7 @@ import LoginPage from "./components/pages/login.page.vue";
 import ConsolePage from "./components/pages/console.page.vue";
 import MainPage from "./components/pages/main.page.vue";
 import SearchPage from "./components/pages/search.page.vue";
+import ShowAllWorkersPage from "./components/pages/showAllWorkers.page.vue";
 
 import jwt from 'jsonwebtoken';
 
@@ -17,7 +18,8 @@ export const AppRouter = new VueRouter({
         { path:"/login", component: LoginPage},
         { path:"/console", component: ConsolePage},
         { path:"/main", component: MainPage},
-        { path:"/search", component: SearchPage}
+        { path:"/search", component: SearchPage},
+        { path:"/showAllWorkers", component: ShowAllWorkersPage}
     ]
 });
 
