@@ -237,6 +237,11 @@
 						<Option v-for="item in dutyList" :value="item" :key="item">{{ item }}</Option>
 					</Select>
 				</FormItem>
+				<FormItem prop="station" label="员工的所属站点">
+					<Select v-model="formSignInNewUserData.station" size="default" style="width:auto" placeholder="请选择员工的所属站点">
+						<Option v-for="item in tollList" :value="item" :key="item">{{ item }}</Option>
+					</Select>
+				</FormItem>
 			</Form>
 			<div slot="footer">
 				<Button type="primary" size="large" long  @click="signInNewUserModelSubmit">提 交</Button>
@@ -355,7 +360,8 @@
 				formSignInNewUserData:{
 					workId:"",
 					workerName:"",
-					duty:""
+					duty:"",
+					station:""
 				},
 				formResetUserPwdModelData:{
 					workId:"",
@@ -420,6 +426,9 @@
 					],
 					duty:[
 						{ required: true, message: '请选择职责', trigger: 'blur' }
+					],
+					station:[
+						{ required: true, message: '请选择所属站点', trigger: 'blur' }
 					]
 				},
 				resetUserPwdRule:{
@@ -817,7 +826,8 @@
 				var jsonMsg = {
 					"WorkId":this.formSignInNewUserData.workId,
 					"WorkerName":this.formSignInNewUserData.workerName,
-					"Duty":this.formSignInNewUserData.duty
+					"Duty":this.formSignInNewUserData.duty,
+					"Station":this.formSignInNewUserData.station
 				};
 				var mvue = this;// 向内传vue实体
 				// 采用字符串方式发送
@@ -865,6 +875,7 @@
 				this.formSignInNewUserData.workId="";
 				this.formSignInNewUserData.workerName="";
 				this.formSignInNewUserData.duty="";
+				this.formSignInNewUserData.station="";
 			},
 			resetUserPwdModelSubmit(){
 				var valipass = true;
@@ -1032,14 +1043,14 @@
 						}
 						if(isSuccess){
 							mvue.$Notice.success({
-								title: '重设用户权限成功',
+								title: '注销用户成功',
 								desc: '员工用户:(工号)'+jsonMsg.WorkId+'的账号已注销！',
 								duration: 0
 							});
 							mvue.$Loading.finish(); // 进度条载入完毕
 						} else {
 							mvue.$Notice.error({
-								title: '重设用户权限失败',
+								title: '注销用户失败',
 								desc: res.code==="508"?'您的权限不足':res.msg
 							});
 							mvue.$Loading.error(); // 进度条载入失败

@@ -32,7 +32,7 @@
 </style>
 <template>
 	<div>
-		<Drawer :closable="false" width="360" v-model="canShow" placement="left" title="我的资料">
+		<Drawer :closable="false" width="370" v-model="canShow" placement="left" title="我的资料">
 			<div class="mine-drawer-profile-profile">
 				<div class="mineAvatarDiv">
 					<img class="mineAvatarImage" :src="imgDir+'avatar.png'"></img>
@@ -48,8 +48,8 @@
 						<font face="微软雅黑">{{userInfo.workId}}</font><br/><br/>
 						<font face="微软雅黑" color="#808695">姓名:</font>
 						<font face="微软雅黑">{{userInfo.workerName}}</font><br/><br/>
-						<font face="微软雅黑" color="#808695">职责:</font>
-						<font face="微软雅黑">{{userInfo.duty}}</font><br/><br/>
+						<font face="微软雅黑" color="#808695">职责与所属站点:</font>
+						<font face="微软雅黑">{{userInfo.duty}}({{userInfo.station}})</font><br/><br/>
 						<font face="微软雅黑" color="#808695">权限:</font>
 						<font face="微软雅黑">{{myPower}}</font>
 						<Tooltip content="我能进行什么操作？">
@@ -67,6 +67,8 @@
 							<br/><br/>
 						</template>
 						<Button type="default" long @click="resetUserNameModelShow = true">修 改 姓 名</Button>
+						<br/><br/>
+						<Button type="warning" long @click="resetUserStationModelShow = true">修 改 所 属</Button>
 						<br/><br/>
 						<Button type="primary" long @click="resetUserPwdModelShow = true">修 改 密 码</Button>
 						<br/><br/>
@@ -108,6 +110,19 @@
 				<Button type="primary" size="large" long  @click="resetUserNameModelSubmit">提 交</Button>
 			</div>
 		</Modal>
+		<!--重设用户所属站点-->
+		<Modal v-model="resetUserStationModelShow" title="重设用户所属站点">
+			<Form ref="formNewUserStation" :model="formResetUserStationData" :rules="resetUserStationRule">
+				<FormItem prop="station" label="员工的所属站点">
+					<Select v-model="formResetUserStationData.station" size="default" style="width:auto" placeholder="请选择员工的所属站点">
+						<Option v-for="item in tollList" :value="item" :key="item">{{ item }}</Option>
+					</Select>
+				</FormItem>
+			</Form>
+			<div slot="footer">
+				<Button type="primary" size="large" long  @click="resetUserStationModelSubmit">提 交</Button>
+			</div>
+		</Modal>
 	</div>
 </template>
 <script type="text/javascript">
@@ -133,12 +148,16 @@
 				userInfo:{
 					workId:"",
 					workerName:"",
-					duty:""
+					duty:"",
+					station:""
 				},
+
+				tollList:[],
 
 
 				resetUserPwdModelShow:false,
 				resetUserNameModelShow:false,
+				resetUserStationModelShow:false,
 
 				formResetUserPwdModelData:{
 					accountId:"",
@@ -147,6 +166,9 @@
 				},
 				formResetUserNameModelData:{
 					userName:""
+				},
+				formResetUserStationData:{
+					station:""
 				},
 
 				resetUserPwdRule:{
@@ -163,6 +185,11 @@
 					userName:[
 						{ required: true, message: '请输入新姓名', trigger: 'blur' },
 						{ type: 'string', max: 5, message: '长度在5字以内', trigger: 'blur' }
+					]
+				},
+				resetUserStationRule:{
+					station:[
+						{ required: true, message: '请选择新的所属站点', trigger: 'blur' }
 					]
 				}
 			}
@@ -216,6 +243,7 @@
 					this.userInfo.workId = mWorkId;
 					this.userInfo.workerName = '特殊账户';
 					this.userInfo.duty = '特殊账户';
+					this.userInfo.station = '网站管理组';
 					return;
 				}
 				
@@ -240,6 +268,7 @@
 							mvue.userInfo.workId = res.data[0].WorkId;
 							mvue.userInfo.workerName = res.data[0].WorkerName;
 							mvue.userInfo.duty = res.data[0].Duty;
+							mvue.userInfo.station = res.data[0].Station;
 							mvue.$Loading.finish();
 						} else {
 							mvue.canShow = false;
@@ -254,6 +283,44 @@
 						mvue.canShow = false;
 						mvue.$Loading.error(); // 进度条载入失败
 					});
+
+				axios.get(Store.state.server+"/GetTollList",
+				{   
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						"Token":Store.state.token
+					}
+				})
+				.then(function (response) {
+					let res = response.data;
+					let isSuccess = res.code=="100";
+					if(isSuccess){
+						let dataList = res.data;
+						if(dataList.length != mvue.tollList.length){
+							mvue.tollList.splice(0, mvue.tollList.length); // 清空重装
+							for(var i=0;i<dataList.length;i++){
+								mvue.tollList.push(dataList[i].TollName);
+							}
+						}
+						mvue.canShow = true;
+						mvue.$Loading.finish();
+					} else {
+						mvue.canShow = false;
+						mvue.$Loading.error(); // 进度条载入失败
+						mvue.$Notice.error({
+							title: '拉取收费站列表失败',
+							desc: '服务器正忙，请稍刷新页面尝试'
+						});
+					}
+				})
+				.catch(function (error) {
+					mvue.$Notice.error({
+						title: '拉取收费站列表失败',
+						desc: '您的网络连接似乎不稳定，请稍刷新页面'
+					});
+					mvue.canShow = false;
+					mvue.$Loading.error(); // 进度条载入失败
+				});
 			},
 			showWhatCanIdo(){
 				this.$Message.info({
@@ -409,6 +476,77 @@
 				// 清空数据
 				this.resetUserNameModelShow = false;
 				this.formResetUserNameModelData.userName="";
+			},
+			resetUserStationModelSubmit(){
+				var valipass = true;
+				this.$refs['formNewUserStation'].validate((valid) => {
+                    if (!valid) {
+						this.$Notice.error({
+								title: '表单填写有误',
+								desc: '请检查您的输入!'
+							});
+                        valipass = false;
+                    } 
+                })
+				if(!valipass) return;
+
+				if(this.token==null){
+					return this.returnToLogin();
+				}
+
+				var workId = jwt.decode(this.token, {complete: true}).payload.sub; // 修改账号时用的其实时 系统账号而非工号
+				if(!/^[0-9]{9,9}$/.test(workId)){
+					this.$Notice.info({
+						title: '特殊账号无法修改所属站点',
+						desc: '您是特殊账号而非员工账号，无法修改所属站点。'
+					});
+					this.resetUserStationModelShow = false;
+					this.formResetUserStationData.station="";
+					return;
+				}
+
+				this.$Loading.start(); // 进度条开始载入
+				var jsonMsg = {
+					"WorkId":workId,
+					"Station":this.formResetUserStationData.station,
+				};
+				var mvue = this;// 向内传vue实体
+				// 采用字符串方式发送
+				axios.post(Store.state.server+"/ResetWorkerStationServlet", qs.stringify(jsonMsg),
+					{
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							"Token":Store.state.token
+						}
+					})
+					.then(function (response) {
+						let res = response.data;
+						let isSuccess = res.code==="100";
+						//console.log(res.MSG,isSuccess);
+						if(mvue.tokenLost(res.code)){
+							return mvue.returnToLogin();
+						}
+						if(isSuccess){
+							mvue.$Notice.success({
+								title: '重设用户所属站点成功',
+								desc: '员工的所属站点已重设为【'+ jsonMsg["Station"] +'】。'
+							});
+							mvue.$Loading.finish(); // 进度条载入完毕
+							mvue.canShow = false; // 侧边栏收起
+						} else {
+							mvue.$Notice.error({
+								title: '重设用户所属站点成功失败',
+								desc: res.code==="508"?'您的权限不足':res.msg
+							});
+							mvue.$Loading.error(); // 进度条载入失败
+						}
+					})
+					.catch(function (error) {
+						mvue.$Loading.error(); // 进度条载入失败
+					});
+				// 清空数据
+				this.resetUserStationModelShow = false;
+				this.formResetUserStationData.station="";
 			}
 		}
 	}

@@ -29,13 +29,11 @@
 					<Card :bordered="false" dis-hover>
 						<Row slot="title">
 							<Col span="1"> &nbsp;</Col>
-							<Col span="6"> <b>UID</b></Col>
-
-							<Col span="6"> <b>工号</b></Col>
-
-							<Col span="6"> <b>工人名</b></Col>
-
+							<Col span="4"> <b>UID</b></Col>
+							<Col span="5"> <b>工号</b></Col>
+							<Col span="4"> <b>工人名</b></Col>
 							<Col span="4"> <b>职责</b></Col>
+							<Col span="5"> <b>所属</b></Col>
 							<Col span="1"> 
 								<Tooltip content="刷新页面数据"><Icon type="md-refresh-circle" color="#19be6b" @click="refreshData" size="24"/></Tooltip>
 							</Col>
@@ -45,13 +43,11 @@
 								<Card :bordered="false">
 									<Row>
 										<Col span="1"> &nbsp;</Col>
-										<Col span="6"> <b>{{item.UID}}</b></Col>
-
-										<Col span="6"> <b>{{item.WorkId}}</b></Col>
-
-										<Col span="6"> <b>{{item.WorkerName}}</b></Col>
-
-										<Col span="5"> <b>{{item.Duty}}</b></Col>
+										<Col span="4"> <b>{{item.UID}}</b></Col>
+										<Col span="5"> <b>{{item.WorkId}}</b></Col>
+										<Col span="4"> <b>{{item.WorkerName}}</b></Col>
+										<Col span="4"> <b>{{item.Duty}}</b></Col>
+										<Col span="6"> <b>{{item.Station}}</b></Col>
 									</Row>
 								</Card>
 							</div>
