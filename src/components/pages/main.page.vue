@@ -217,6 +217,12 @@
 						:autosize="{minRows: 2,maxRows: 5}" placeholder="请输入录入黑名单的原因(100字以内)">
 					</Input>
 				</FormItem>
+				<FormItem label="黑名单车辆照片：" prop="carImgFile"><!--最大5MB-->
+					<Upload action="/SignInBlackCarWithPic" :max-size="1024*5" show-upload-list :before-upload="manualUpload" :format="['jpg','jpeg','png']">
+						<Button icon="ios-cloud-upload-outline">上传图片文件</Button>
+						&nbsp;<Icon type="md-checkmark-circle" color="#19be6b" v-if="formNewBlackCarData.carImgFile!=undefined"/>
+					</Upload>
+				</FormItem>
 			</Form>
 			<div slot="footer">
 				<Button type="primary" size="large" long  @click="signInBlackCarModelSubmit">提 交</Button>
@@ -316,6 +322,8 @@
 		<!--通用模态框-->
 		<Modal :title="generalModelTitle" v-model="generalModelShow" :mask-closable="false">
 			<p>{{generalModelContent}}</p>
+			<Divider orientation="left">车辆照片</Divider>
+			<img :src="blackCarPicUrl" width="480px"/>
 		</Modal>
 	</Row>
 </template>
@@ -344,6 +352,7 @@
 
 				generalModelTitle:"",
 				generalModelContent:"",
+				blackCarPicUrl:"/car/res/img/noimg.jpg", // 黑名单车辆的图片默认地址
 
 				formNewCarTypeData: {
 					newCarType:""
@@ -353,7 +362,8 @@
 					newCarIdPartII:"A",
 					newCarId:"",
 					newCarType:"",
-					newCarCause:""
+					newCarCause:"",
+					carImgFile:undefined
 				},
 				formCheckBlackCarData:{
 					carIdPartI:"陕",
@@ -629,6 +639,10 @@
                     } 
                 })
 				if(!valipass) return;
+				if(this.formNewBlackCarData.carImgFile==undefined){
+					this.$Message.info('尚未上传图片!');
+					return;
+				}
 
 				this.$Loading.start(); // 进度条开始载入
 				var jsonMsg = {
@@ -639,12 +653,20 @@
 					"CarType":this.formNewBlackCarData.newCarType,
 					"Cause":this.formNewBlackCarData.newCarCause
 				};
+
+				var fd = new FormData();
+				fd.append('CarId', jsonMsg["CarId"]);
+				fd.append('CarType', jsonMsg["CarType"]);
+				fd.append('Cause', jsonMsg["Cause"]);
+				fd.append('PicUrl', this.formNewBlackCarData.carImgFile);
 				var mvue = this;// 向内传vue实体
-				// 采用字符串方式发送
-				axios.post(Store.state.server+"/SignInBlackCar", qs.stringify(jsonMsg),
-					{
+
+				axios({
+						url:Store.state.server+"/SignInBlackCarWithPic",
+						data:fd,
+						method:'post',
 						headers: {
-							'Content-Type': 'application/x-www-form-urlencoded',
+							'Content-Type': 'multipart/form-data',
 							"Token":Store.state.token
 						}
 					})
@@ -680,6 +702,48 @@
 					.catch(function (error) {
 						mvue.$Loading.error(); // 进度条载入失败
 					});
+
+				// 不带图片的AJAX，已废弃
+				// 采用字符串方式发送
+				// axios.post(Store.state.server+"/SignInBlackCar", qs.stringify(jsonMsg),
+				// 	{
+				// 		headers: {
+				// 			'Content-Type': 'application/x-www-form-urlencoded',
+				// 			"Token":Store.state.token
+				// 		}
+				// 	})
+				// 	.then(function (response) {
+				// 		let res = response.data;
+				// 		let isSuccess = res.code==="100";
+				// 		//console.log(res.MSG,isSuccess);
+				// 		if(mvue.tokenLost(res.code)){
+				// 			mvue.$Notice.warning({
+				// 				title: '登录已过期',
+				// 				desc: '请重新登录'
+				// 			});
+				// 			Store.commit('offline'); // 设置登录状态
+				// 			mvue.$Loading.error(); // 进度条载入失败
+				// 			mvue.$router.push("/login"); // 跳转到主页面
+				// 			return;
+				// 		}
+				// 		if(isSuccess){
+				// 			mvue.$Notice.success({
+				// 				title: '登记新黑名单车辆成功',
+				// 				desc: '新黑名单车辆:'+jsonMsg.CarId+'已录入!',
+				// 				duration: 8
+				// 			});
+				// 			mvue.$Loading.finish(); // 进度条载入完毕
+				// 		} else {
+				// 			mvue.$Notice.error({
+				// 				title: '登记新黑名单车辆失败',
+				// 				desc: res.code==="103"?'数据库中已存在该车':res.msg
+				// 			});
+				// 			mvue.$Loading.error(); // 进度条载入失败
+				// 		}
+				// 	})
+				// 	.catch(function (error) {
+				// 		mvue.$Loading.error(); // 进度条载入失败
+				// 	});
 				// 清空数据
 				this.signInNewBlackCarModelShow = false;
 				this.formNewBlackCarData.newCarIdPartI="陕";
@@ -687,6 +751,7 @@
 				this.formNewBlackCarData.newCarId="";
 				this.formNewBlackCarData.newCarType="";
 				this.formNewBlackCarData.newCarCause="";
+				this.formNewBlackCarData.carImgFile=undefined;
 				// 清空拉取的车型数据 下次重新读取
 				//this.carTypeList.splice(0,this.carTypeList.length);
 			},
@@ -788,6 +853,7 @@
 								mvue.generalModelShow = true; // 显示结果框
 								mvue.generalModelTitle = '该车('+jsonMsg.CarId+')是黑名单车辆!';
 								mvue.generalModelContent = '黑名单原因：'+res.data[0].Cause;
+								mvue.blackCarPicUrl = Store.state.server + res.data[0].PicUrl;
 							}
 							
 							mvue.$Loading.finish(); // 进度条载入完毕
@@ -1164,6 +1230,24 @@
 			setDateEnd(value,type){
 				this.$refs['formSearch'].validate((valid) => {});
 				this.formSearchData.dateEnd=value;
+			},
+
+			manualUpload(temp_file){
+				// 手动控制黑名单车辆所上传文件的内容
+				// console.log(temp_file);
+				if(temp_file.size > 1024 * 1024 * 5){
+					this.$Message.error('文件过大!上传文件需要小于5MB！');
+					this.formNewBlackCarData.carImgFile = undefined;
+					return false;
+				}
+				// if(temp_file.type !== "image/jpeg"){
+				// 	this.$Message.error('文件格式错误，支持jpg格式的图片！');
+				// 	this.formNewBlackCarData.carImgFile = undefined;
+				// 	return false;
+				// }
+				this.$Message.success('图片已成功读取！');
+				this.formNewBlackCarData.carImgFile = temp_file;
+				return false;
 			}
 
 		}
