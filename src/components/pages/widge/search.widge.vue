@@ -39,13 +39,14 @@ a:active{color:#2db7f5;}
 	<div>
 		<Card :bordered="false">
 			<Row>
-				<Col span="3"> {{info.CarId}}</Col>
+				<Col span="2"> {{info.CarId}}</Col>
 				<Col span="4"> {{info.SignTime}}</Col>
 				<Col span="3"> {{info.Worker}}</Col>
-				<Col span="3"> {{info.Shift}}</Col>
+				<Col span="2"> {{info.Shift}}</Col>
 				<Col span="3"> {{info.Charger}}</Col>
 				<Col span="3"> {{info.EntryToll}}</Col>
-				<Col span="5"> 
+				<Col span="3"> {{info.ExitToll===undefined?"/":info.ExitToll}}</Col><!--该值可能为空-->
+				<Col span="4"> 
 					<Button type="primary" size="default" shape="circle" long @click="tryToBuildDoc(info.UID, beanType)" v-if="buildDocStatus==1" icon="md-document">生 成 文 档</Button>
 					<div v-else-if="buildDocStatus==2">
 						<Row>

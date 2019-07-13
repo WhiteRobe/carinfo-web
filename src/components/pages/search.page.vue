@@ -29,13 +29,14 @@
 					<Card :bordered="false" dis-hover>
 						<Row slot="title">
 							<Col span="1"> &nbsp;</Col>
-							<Col span="3"> <b>车牌号</b></Col>
+							<Col span="2"> <b>车牌号</b></Col>
 							<Col span="3"> <b>时间</b></Col>
 							<Col span="3"> <b>处理人</b></Col>
-							<Col span="3"> <b>班次</b></Col>
+							<Col span="2"> <b>班次</b></Col>
 							<Col span="3"> <b>班长</b></Col>
 							<Col span="3"> <b>入口站</b></Col>
-							<Col span="4"> <b>操作</b></Col>
+							<Col span="3"> <b>出口站</b></Col>
+							<Col span="3"> <b>操作</b></Col>
 							<Col span="1"> 
 								<Tooltip content="刷新页面数据"><Icon type="md-refresh-circle" color="#19be6b" @click="refreshData" size="24"/></Tooltip>
 							</Col>
@@ -94,6 +95,7 @@
 			this.formSearchData.dateBegin = this.$route.query.dateBegin;
 			this.formSearchData.dateEnd = this.$route.query.dateEnd;
 			this.formSearchData.station = this.$route.query.station;
+			this.formSearchData.exitStation = this.$route.query.exitStation;
 			this.getPageData();
 		},
 		computed:{
@@ -137,6 +139,7 @@
 							"DateBegin":mvue.formSearchData.dateBegin,
 							"DateEnd":mvue.formSearchData.dateEnd,
 							"Station":mvue.formSearchData.station,
+							"ExitStation":mvue.formSearchData.exitStation,
 							"Page":mvue.formSearchData.page
 						}
 					})

@@ -57,16 +57,19 @@
 							</Col>
 							<Col span="8">
 								<FormItem prop="station" label="按入口站筛选">
-									<!--<Select v-model="formSearchData.station" style="width: auto" sise="large" placeholder="请选择入口站，可缺省">
-										<Option v-for="item in tollList" :value="item" :key="item">{{ item }}</Option>
-									</Select>-->
 									<!--按要求修改成手输入口站-->
 									<Input type="text" v-model="formSearchData.station" style="width: auto" placeholder="如:咸阳，可缺省">
 										<Icon type="ios-home" slot="prepend"></Icon>
 									</Input>
 								</FormItem>
 							</Col>
-							<Col span="8">&nbsp;</Col>
+							<Col span="8">
+								<FormItem prop="exitStation" label="按出口站筛选">
+									<Select v-model="formSearchData.exitStation" style="width: auto" sise="large" placeholder="请选择出口站，可缺省">
+										<Option v-for="item in tollList" :value="item" :key="item">{{ item }}</Option>
+									</Select>
+								</FormItem>
+							</Col>
 						</Row>
 					</Form>
 				</Card>
@@ -384,7 +387,8 @@
 					shift:"",
 					dateBegin:"",
 					dateEnd:"",
-					station:"" // 入口站
+					station:"", // 入口站
+					exitStation:"" // 出口站
 				},
 
 				carTypeList:[],
@@ -472,6 +476,7 @@
 					// shift:{
 
 					// },
+					// exitStation:{},
 					dateBegin:[
 						{ required: true, message: '请选择开始日期', trigger: 'blur' }
 					],
@@ -1146,7 +1151,8 @@
 					'&&shift='+ this.formSearchData.shift +
 					'&&dateBegin='+ this.formSearchData.dateBegin +
 					'&&dateEnd='+ this.formSearchData.dateEnd +
-					'&&station='+ stationRealValue;
+					'&&station='+ stationRealValue +
+					'&&exitStation='+ this.formSearchData.exitStation;
 				//console.log(url);
 
 				this.$router.push(url); // 跳到搜索页
